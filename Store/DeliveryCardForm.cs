@@ -16,6 +16,21 @@ namespace Store
             name.Text = "Адрес доставки";
             InitializeComponent();
         }
+        public DeliveryCardForm(int id)
+        {
+            name.Text = "Адрес доставки";
+            InitializeComponent();
+            DataTable table = LoadTestForm(id, TableName);
+            string value = table.Rows[0]["delivery"].ToString();
+            nameTextBox.Text = value;
+        }
+        protected override DataTable LoadTestForm(int a, string tableName)
+        {
+            int cardId = a;
+            string table = TableName;
+            DataTable dataTable = DBQueries.LoadParentCard(cardId, table);
+            return dataTable;
+        }
         //Переопределение кнопки ОК
         protected override void OKButton_Click(object sender, EventArgs e)
         {

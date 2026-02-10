@@ -12,18 +12,19 @@ namespace Store
 {
     public partial class ParentDirectoryForm : Form
     {
+        int id = 0;
         public virtual string TableName { get; set; } = "";
         public ParentDirectoryForm()
         {
-            InitializeComponent();
-            //ParentDirectoryFormFill();
+            InitializeComponent();            
         }
 
         //Запролнение grid данными из таблицы 
         public virtual void ParentDirectoryFormFill()
-        {            
+        {
             dataGridViewParentDirectory.DataSource = DBQueries.LoadGridInForm(TableName);
         }
+        
         //Кнопка "Создать запись"
         public virtual void createRecordButton_Click(object sender, EventArgs e)
         {
@@ -41,8 +42,7 @@ namespace Store
         {
             Close();
         }
-        //Кнопка "Удалить запись"
-        //Кнопка "Удалить запись"
+        //Кнопка "Удалить запись"        
         protected virtual void deleteRecordButton_Click(object sender, EventArgs e)
         {
             int currentRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
@@ -59,6 +59,15 @@ namespace Store
             {
                 MessageBox.Show(res);
             }
-        }        
+        }
+        //Кнопка Открыть карточку
+        protected virtual void openButton_Click(object sender, EventArgs e)
+        {
+            var idd = dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
+            int currenRow = (int)idd;
+            ParentCardForm parentCardForm = new ParentCardForm(currenRow);
+            parentCardForm.Show();
+        }
+        
     }
 }

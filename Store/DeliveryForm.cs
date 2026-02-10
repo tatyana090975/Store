@@ -28,5 +28,12 @@ namespace Store
             deliveryCardForm.Show();
 
         }
+        //Кнопка Открыть карточку
+        protected override void openButton_Click(object sender, EventArgs e)
+        {
+            int currenRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
+            DeliveryCardForm deliveryCardForm = new DeliveryCardForm(currenRow);
+            deliveryCardForm.Show();
+        }
     }
 }

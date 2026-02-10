@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Google.Protobuf.Compiler;
+using Google.Protobuf.WellKnownTypes;
+using MySqlX.XDevAPI.Relational;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,12 +14,73 @@ namespace Store
     public partial class EmployeCardForm : Store.ParentCardForm
     {
         public override string TableName { get; set; } = "employe";
+        public int ID = 0;
         public EmployeCardForm()
         {
-            InitializeComponent();
+            InitializeComponent();            
             FillPersonComboBox();
-            FillPositionComboBox();
+            FillPositionComboBox();           
         }
+
+        public EmployeCardForm(int id)
+        {
+            ID = id;            
+            string person = "";
+            string position = "";
+            int personId = 0;
+            int positionId = 0;
+            InitializeComponent();
+            DataTable table = LoadTestForm(id, TableName);
+            foreach (DataRow row in table.Rows)
+            {
+                personId = (int)row["person_id"];
+                positionId = (int)row["position_id"];
+            }
+                //int personId = (int)table[1];
+            //Находим ФИО персоны
+            DataTable table1 = DBQueries.LoadParentCard(personId, "person");
+            foreach (DataRow row in table1.Rows)
+            {
+                string idp = row["person_id"].ToString();
+                string name = row["name"].ToString();
+                string secondname = row["secondname"].ToString();
+                string surname = row["surname"].ToString();
+
+                // Формируем строку для отображения
+                person = $"{surname} {name} {secondname}";
+            }
+            personComboBox.Text = person;
+            //Находим должность
+            DataTable table2 = DBQueries.LoadParentCard(positionId, "position");
+            foreach (DataRow row in table2.Rows)
+            {
+                string idp = row["position_id"].ToString();
+                string name = row["position"].ToString();
+
+                // Формируем строку для отображения
+                position = $"{name}";
+            }
+            positionComboBox.Text = position;
+        }
+        //Проверка id на недопустимые значения
+        private void SetSelectedPerson(string personId)
+        {
+            if (string.IsNullOrEmpty(personId) || personId == "0")
+            {
+                personComboBox.SelectedIndex = 0;
+                return;
+            }
+
+        }
+        //Загрузка данных выбранной карточки в DataTable
+        protected override DataTable LoadTestForm(int a, string tableName)
+        {
+            int cardId = a;
+            string table = TableName;
+            DataTable dataTable = DBQueries.LoadParentCard(cardId, table);
+            return dataTable;
+        }
+
         //Заполнение данными personComboBox
         private void FillPersonComboBox()
         {

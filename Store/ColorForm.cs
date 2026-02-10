@@ -28,5 +28,12 @@ namespace Store
             colorCardForm.Show();
 
         }
+        //Кнопка Открыть карточку
+        protected override void openButton_Click(object sender, EventArgs e)
+        {
+            int currenRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
+            ColorCardForm colorCardForm = new ColorCardForm(currenRow);
+            colorCardForm.Show();
+        }
     }
 }

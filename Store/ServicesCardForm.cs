@@ -16,6 +16,23 @@ namespace Store
             name.Text = "Наименование услуги";
             InitializeComponent();
         }
+        public ServicesCardForm(int id)
+        {
+            name.Text = "Наименование услуги";
+            InitializeComponent();
+            DataTable table = LoadTestForm(id, TableName);
+            string value = table.Rows[0]["services"].ToString();
+            nameTextBox.Text = value;
+            string value1 = table.Rows[0]["price"].ToString();
+            priceTextBox.Text = value1;
+        }
+        protected override DataTable LoadTestForm(int a, string tableName)
+        {
+            int cardId = a;
+            string table = TableName;
+            DataTable dataTable = DBQueries.LoadParentCard(cardId, table);
+            return dataTable;
+        }
         //Переопределение кнопки ОК
         protected override void OKButton_Click(object sender, EventArgs e)
         {

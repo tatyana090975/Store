@@ -31,6 +31,7 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.closeButton = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.openButton = new System.Windows.Forms.Button();
             this.buttonRefresh = new System.Windows.Forms.Button();
             this.deleteButton = new System.Windows.Forms.Button();
             this.createRecordButton = new System.Windows.Forms.Button();
@@ -66,6 +67,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.openButton);
             this.panel1.Controls.Add(this.buttonRefresh);
             this.panel1.Controls.Add(this.deleteButton);
             this.panel1.Controls.Add(this.createRecordButton);
@@ -74,6 +76,18 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1057, 101);
             this.panel1.TabIndex = 22;
+            // 
+            // openButton
+            // 
+            this.openButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.openButton.Location = new System.Drawing.Point(430, 4);
+            this.openButton.Margin = new System.Windows.Forms.Padding(4);
+            this.openButton.Name = "openButton";
+            this.openButton.Size = new System.Drawing.Size(100, 91);
+            this.openButton.TabIndex = 3;
+            this.openButton.Text = "Открыть запись";
+            this.openButton.UseVisualStyleBackColor = true;
+            this.openButton.Click += new System.EventHandler(this.openButton_Click);
             // 
             // buttonRefresh
             // 
@@ -102,7 +116,7 @@
             // createRecordButton
             // 
             this.createRecordButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.createRecordButton.Location = new System.Drawing.Point(4, 4);
+            this.createRecordButton.Location = new System.Drawing.Point(9, 6);
             this.createRecordButton.Margin = new System.Windows.Forms.Padding(4);
             this.createRecordButton.Name = "createRecordButton";
             this.createRecordButton.Size = new System.Drawing.Size(100, 91);
@@ -149,8 +163,10 @@
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.tablePanel);
+            this.Cursor = System.Windows.Forms.Cursors.Default;
             this.Name = "ParentDirectoryForm";
             this.Text = "7";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.panel2.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.tablePanel.ResumeLayout(false);
@@ -170,6 +186,7 @@
         private System.Windows.Forms.Button createRecordButton;
         private System.Windows.Forms.Panel tablePanel;
         protected System.Windows.Forms.DataGridView dataGridViewParentDirectory;
+        private System.Windows.Forms.Button openButton;
     }
 }
 
