@@ -29,7 +29,7 @@ namespace Store
 
         }
         //Кнопка Открыть карточку
-        protected override void openButton_Click(object sender, EventArgs e)
+        public override void openButton_Click(object sender, EventArgs e)
         {
             int currenRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
             PersonCardForm personCardForm = new PersonCardForm(currenRow);

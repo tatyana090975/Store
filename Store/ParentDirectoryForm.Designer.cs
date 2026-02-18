@@ -186,7 +186,7 @@
         private System.Windows.Forms.Button createRecordButton;
         private System.Windows.Forms.Panel tablePanel;
         protected System.Windows.Forms.DataGridView dataGridViewParentDirectory;
-        private System.Windows.Forms.Button openButton;
+        public System.Windows.Forms.Button openButton;
     }
 }
 

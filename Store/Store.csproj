@@ -107,6 +107,12 @@
     <Compile Include="ColorForm.Designer.cs">
       <DependentUpon>ColorForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="CounteragentCardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CounteragentCardForm.Designer.cs">
+      <DependentUpon>CounteragentCardForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="DB.cs" />
     <Compile Include="DBQueries.cs" />
     <Compile Include="DeliveryCardForm.cs">

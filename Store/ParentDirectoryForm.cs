@@ -43,7 +43,7 @@ namespace Store
             Close();
         }
         //Кнопка "Удалить запись"        
-        protected virtual void deleteRecordButton_Click(object sender, EventArgs e)
+        public virtual void deleteRecordButton_Click(object sender, EventArgs e)
         {
             int currentRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
             int rowIndex = dataGridViewParentDirectory.CurrentRow.Index;
@@ -61,7 +61,7 @@ namespace Store
             }
         }
         //Кнопка Открыть карточку
-        protected virtual void openButton_Click(object sender, EventArgs e)
+        public virtual void openButton_Click(object sender, EventArgs e)
         {
             var idd = dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
             int currenRow = (int)idd;

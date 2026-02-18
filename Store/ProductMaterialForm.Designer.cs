@@ -30,10 +30,15 @@
         {
             this.SuspendLayout();
             // 
+            // openButton
+            // 
+            this.openButton.Location = new System.Drawing.Point(407, 6);
+            // 
             // ProductMaterialForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.ClientSize = new System.Drawing.Size(1065, 550);
+            this.Location = new System.Drawing.Point(0, 0);
             this.Name = "ProductMaterialForm";
             this.Text = "Справочник \"Товары-материалы\"";
             this.ResumeLayout(false);

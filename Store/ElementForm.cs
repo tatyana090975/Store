@@ -28,7 +28,7 @@ namespace Store
             elementCardForm.Show();
         }
         //Кнопка Открыть карточку
-        protected override void openButton_Click(object sender, EventArgs e)
+        public override void openButton_Click(object sender, EventArgs e)
         {
             int currenRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
             ElementCardForm elementCardForm = new ElementCardForm(currenRow);

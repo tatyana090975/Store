@@ -15,6 +15,7 @@ namespace Store
         {
             InitializeComponent();
             ParentDirectoryFormFill();
+            this.openButton.Visible = false;
         }
         
         //Запролнение grid данными из таблицы 
@@ -28,8 +29,8 @@ namespace Store
             TradeMarginCardForm tradeMarginCardForm = new TradeMarginCardForm();
             tradeMarginCardForm.Show();
         }
-        //Кнопка Открыть карточку
-        protected override void openButton_Click(object sender, EventArgs e)
+        //Кнопка "Открыть запись"
+        public override void openButton_Click(object sender, EventArgs e)
         {
             int currenRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
             TradeMarginCardForm tradeMarginCardForm = new TradeMarginCardForm(currenRow);

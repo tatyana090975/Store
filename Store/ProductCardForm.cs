@@ -12,6 +12,7 @@ namespace Store
     public partial class ProductCardForm : Store.ParentCardForm
     {
         public override string TableName { get; set; } = "product";
+        
         public ProductCardForm()
         {
             name.Text = "Наименование товара";
@@ -22,7 +23,9 @@ namespace Store
         {
             ID = id;
             name.Text = "Наименование товара";
+            string color = "";
             InitializeComponent();
+            FillColorComboBox();
             DataTable table = LoadTestForm(id, TableName);
             string value = table.Rows[0]["product"].ToString();
             nameTextBox.Text = value;
@@ -37,23 +40,13 @@ namespace Store
             foreach (DataRow row in table1.Rows)
             {
                 string id1 = row["color_id"].ToString();
-                string color = row["color"].ToString();
+                string color1 = row["color"].ToString();
 
 
                 // Формируем строку для отображения
-                string displayText = $"{color}";
-
-                // Сохраняем ID в свойстве Tag
-                colorComboBox.Items.Add(new
-                {
-                    Text = displayText,
-                    Id = id1
-                });
-                // Настраиваем отображение
-                colorComboBox.DisplayMember = "Text";
-                colorComboBox.ValueMember = "Id";
-                colorComboBox.SelectedIndex = 0;                
-            }            
+                color = $"{color1}";                            
+            } 
+            colorComboBox.Text = color;
         }
         protected override DataTable LoadTestForm(int a, string tableName)
         {
@@ -181,9 +174,7 @@ namespace Store
                     MessageBox.Show(res);
                     this.Close();
                 }
-            }
-        
+            }        
         }
-
     }
 }

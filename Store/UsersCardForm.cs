@@ -55,8 +55,7 @@ namespace Store
             {
                 personComboBox.SelectedIndex = 0;
                 return;
-            }
-            
+            }            
         }
         //Загрузка данных выбранной карточки в DataTable
         protected override DataTable LoadTestForm(int a, string tableName)

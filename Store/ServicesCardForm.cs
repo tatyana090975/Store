@@ -11,6 +11,7 @@ namespace Store
     public partial class ServicesCardForm : Store.ParentCardForm
     {
         public override string TableName { get; set; } = "services";
+        int ID = 0;
         public ServicesCardForm()
         {
             name.Text = "Наименование услуги";
@@ -18,6 +19,7 @@ namespace Store
         }
         public ServicesCardForm(int id)
         {
+            this.ID = id;
             name.Text = "Наименование услуги";
             InitializeComponent();
             DataTable table = LoadTestForm(id, TableName);
@@ -38,6 +40,44 @@ namespace Store
         {
             string name = nameTextBox.Text;
             string pr = priceTextBox.Text;
+            if (pr.Contains(".")) { pr = pr.Replace(".", ","); }
+            double price = double.Parse(pr);
+
+            if (ID == 0)
+            {
+                CardData.Add(("services", name));
+                CardData.Add(("price", price));
+
+                if (name == "" || priceTextBox.Text == "")
+                {
+                    MessageBox.Show("Заполните все поля!");
+                }
+                else
+                {
+                    string res = DBQueries.SaveCard(TableName, CardData.ToArray());
+                    MessageBox.Show(res);
+                    this.Close();
+                }
+            }
+            else
+            {
+                CardData.Add(("services", name));
+                CardData.Add(("price", price));
+
+                if (name == "" || priceTextBox.Text == "")
+                {
+                    MessageBox.Show("Заполните все поля!");
+                }
+                else
+                {
+                    string res = DBQueries.UpdateCard(TableName, ID, CardData.ToArray());
+                    MessageBox.Show(res);
+                    this.Close();
+                }
+            }
+            /*
+            string name = nameTextBox.Text;
+            string pr = priceTextBox.Text;
             if (pr.Contains(".")) {pr = pr.Replace(".", ","); }
             double price = double.Parse(pr);
                         
@@ -53,7 +93,7 @@ namespace Store
                 string res = DBQueries.SaveCard(TableName, CardData.ToArray());
                 MessageBox.Show(res);
                 this.Close();
-            }
+            }*/
         }
     }
 }

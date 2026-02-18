@@ -15,28 +15,31 @@ namespace Store
     {
         public override string TableName { get; set; } = "employe";
         public int ID = 0;
+        int personId = 0;
+        int positionId = 0;
         public EmployeCardForm()
         {
             InitializeComponent();            
             FillPersonComboBox();
             FillPositionComboBox();           
         }
-
+        //Конструктор открытия карточки по ИД
         public EmployeCardForm(int id)
         {
             ID = id;            
             string person = "";
             string position = "";
-            int personId = 0;
-            int positionId = 0;
+            //int personId = 0;
+            //int positionId = 0;
             InitializeComponent();
+            FillPersonComboBox();
+            FillPositionComboBox();
             DataTable table = LoadTestForm(id, TableName);
             foreach (DataRow row in table.Rows)
             {
                 personId = (int)row["person_id"];
                 positionId = (int)row["position_id"];
-            }
-                //int personId = (int)table[1];
+            }                
             //Находим ФИО персоны
             DataTable table1 = DBQueries.LoadParentCard(personId, "person");
             foreach (DataRow row in table1.Rows)
@@ -139,38 +142,81 @@ namespace Store
         }
         //Переопределение кнопки ОК
         protected override void OKButton_Click(object sender, EventArgs e)
-        {            
-            string person = personComboBox.Text;
-
-            string selectedPersonId = "0";
-            if (personComboBox.SelectedItem != null && personComboBox.SelectedIndex > 0)
+        {
+            if (ID == 0)
             {
-                var selectedItem = (dynamic)personComboBox.SelectedItem;
-                selectedPersonId = selectedItem.Id;
-            }
-            string position = positionComboBox.Text;
+                string person = personComboBox.Text;
 
-            string selectedPositionId = "0";
-            if (positionComboBox.SelectedItem != null && positionComboBox.SelectedIndex > 0)
-            {
-                var selectedItem = (dynamic)positionComboBox.SelectedItem;
-                selectedPositionId = selectedItem.Id;
-            }
+                string selectedPersonId = "0";
+                if (personComboBox.SelectedItem != null && personComboBox.SelectedIndex > 0)
+                {
+                    var selectedItem = (dynamic)personComboBox.SelectedItem;
+                    selectedPersonId = selectedItem.Id;
+                }
+                string position = positionComboBox.Text;
 
-            int person_id = int.Parse(selectedPersonId);
-            int position_id = int.Parse(selectedPositionId);
-            CardData.Add(("person_id", person_id));
-            CardData.Add(("position_id", position_id));            
+                string selectedPositionId = "0";
+                if (positionComboBox.SelectedItem != null && positionComboBox.SelectedIndex > 0)
+                {
+                    var selectedItem = (dynamic)positionComboBox.SelectedItem;
+                    selectedPositionId = selectedItem.Id;
+                }
 
-            if (person_id < 1 || position_id < 1)
-            {
-                MessageBox.Show("Заполните все поля!");
+                int person_id = int.Parse(selectedPersonId);
+                int position_id = int.Parse(selectedPositionId);
+                CardData.Add(("person_id", person_id));
+                CardData.Add(("position_id", position_id));
+
+                if (person_id < 1 || position_id < 1)
+                {
+                    MessageBox.Show("Заполните все поля!");
+                }
+                else
+                {
+                    string res = DBQueries.SaveCard(TableName, CardData.ToArray());
+                    MessageBox.Show(res);
+                    this.Close();
+                }                
             }
             else
             {
-                string res = DBQueries.SaveCard(TableName, CardData.ToArray());
-                MessageBox.Show(res);
-                this.Close();
+                
+                string person = personComboBox.Text;
+
+                string selectedPersonId = "0";
+                if (personComboBox.SelectedItem != null && personComboBox.SelectedIndex > 0)
+                {
+                    var selectedItem = (dynamic)personComboBox.SelectedItem;
+                    selectedPersonId = selectedItem.Id;
+                }
+                string position = positionComboBox.Text;
+
+                string selectedPositionId = "0";
+                if (positionComboBox.SelectedItem != null && positionComboBox.SelectedIndex > 0)
+                {
+                    var selectedItem = (dynamic)positionComboBox.SelectedItem;
+                    selectedPositionId = selectedItem.Id;
+                }
+                int person_id = int.Parse(selectedPersonId);
+                int position_id = int.Parse(selectedPositionId);
+                if (person_id < 1 || position_id < 1)
+                {
+                    person_id = personId;
+                    position_id = positionId;
+                    CardData.Add(("person_id", person_id));
+                    CardData.Add(("position_id", position_id));
+                    string res = DBQueries.UpdateCard(TableName, ID, CardData.ToArray());
+                    MessageBox.Show(res);
+                    this.Close();
+                }
+                else
+                {
+                    CardData.Add(("person_id", person_id));
+                    CardData.Add(("position_id", position_id));
+                    string res = DBQueries.UpdateCard(TableName, ID, CardData.ToArray());
+                    MessageBox.Show(res);
+                    this.Close();
+                }                
             }
         }
     }

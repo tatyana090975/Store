@@ -29,18 +29,19 @@
         private void InitializeComponent()
         {
             this.phoneLabel = new System.Windows.Forms.Label();
-            this.phoneTextBox = new System.Windows.Forms.TextBox();
+            this.maskedTextBox = new System.Windows.Forms.MaskedTextBox();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.phoneTextBox);
+            this.panel1.Controls.Add(this.maskedTextBox);
             this.panel1.Controls.Add(this.phoneLabel);
+            this.panel1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.panel1.Controls.SetChildIndex(this.nameTextBox, 0);
             this.panel1.Controls.SetChildIndex(this.name, 0);
             this.panel1.Controls.SetChildIndex(this.phoneLabel, 0);
-            this.panel1.Controls.SetChildIndex(this.phoneTextBox, 0);
+            this.panel1.Controls.SetChildIndex(this.maskedTextBox, 0);
             // 
             // name
             // 
@@ -62,13 +63,13 @@
             this.phoneLabel.TabIndex = 2;
             this.phoneLabel.Text = "Телефон";
             // 
-            // phoneTextBox
+            // maskedTextBox
             // 
-            this.phoneTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.phoneTextBox.Location = new System.Drawing.Point(354, 265);
-            this.phoneTextBox.Name = "phoneTextBox";
-            this.phoneTextBox.Size = new System.Drawing.Size(288, 30);
-            this.phoneTextBox.TabIndex = 3;
+            this.maskedTextBox.Location = new System.Drawing.Point(335, 278);
+            this.maskedTextBox.Mask = "+7 (999) 000-0000";
+            this.maskedTextBox.Name = "maskedTextBox";
+            this.maskedTextBox.Size = new System.Drawing.Size(334, 27);
+            this.maskedTextBox.TabIndex = 4;
             // 
             // DeliveryCardForm
             // 
@@ -84,6 +85,6 @@
         #endregion
 
         private System.Windows.Forms.Label phoneLabel;
-        private System.Windows.Forms.TextBox phoneTextBox;
+        private System.Windows.Forms.MaskedTextBox maskedTextBox;
     }
 }

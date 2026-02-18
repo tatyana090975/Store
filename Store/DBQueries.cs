@@ -11,6 +11,19 @@ namespace Store
 {
     internal class DBQueries
     {
+        //Cмена статуса предыдущей записи на false при сохранении новой карточки торговой наценки
+        public static void UpdateStatusTradeVargin(int product_id)
+        {
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter = new MySqlDataAdapter();
+            MySqlCommand command = new MySqlCommand("UPDATE trademargintable SET status = FALSE WHERE product_id = @product_id AND status = TRUE;", dB.GetConnection());
+            command.Parameters.AddWithValue("@product_id", product_id);
+            adapter.SelectCommand = command;
+            adapter.Fill(table);
+            dB.closeConnection();
+        }
         
         //Загрузка списка пользователей в поле loginPasswordList LoginForm
         public static DataTable LoadLoginList()
@@ -194,7 +207,7 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT p.product, c.color,  p.length,  p.width,  p.height,  m.material, e.element FROM product_material pm INNER JOIN product p ON pm.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id INNER JOIN material m ON pm.material_id = m.material_id INNER JOIN element e ON pm.element_id = e.element_id ORDER BY p.product, m.material, e.element;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT pm.product_Material_id, CONCAT (p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) AS product_info,  m.material, e.element FROM product_material pm LEFT JOIN product p ON pm.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id INNER JOIN material m ON pm.material_id = m.material_id INNER JOIN element e ON pm.element_id = e.element_id ORDER BY p.product, m.material, e.element;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -207,7 +220,7 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT t.tradeMarginTable_id, p.product, c.color,  p.length,  p.width,  p.height, t.percent, t.status FROM product_material pm INNER JOIN product p ON pm.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id INNER JOIN trademargintable t ON t.product_id = p.product_id ORDER BY p.product;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT t.tradeMarginTable_id, CONCAT(p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) AS product_info, t.percent, t.status, t.date    FROM product p  LEFT JOIN color c ON p.color_id = c.color_id LEFT JOIN trademargintable t ON t.product_id = p.product_id LEFT JOIN product_material pm ON pm.product_id = p.product_id ORDER BY p.product;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();

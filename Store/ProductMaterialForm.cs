@@ -28,5 +28,14 @@ namespace Store
             productMaterialCardForm.Show();
 
         }
+        //Кнопка "Открыть Запись"
+        public override void openButton_Click(object sender, EventArgs e)
+        {
+            
+            int currenRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
+            ProductMaterialCardForm productMaterialCardForm = new ProductMaterialCardForm(currenRow);
+            productMaterialCardForm.Show();
+            
+        }
     }
 }

@@ -11,12 +11,77 @@ namespace Store
     public partial class ProductMaterialCardForm : Store.ParentCardForm
     {
         public override string TableName { get; set; } = "product_material";
+        int productId = 0;
+        int materialId = 0;
+        int elementId = 0;
+        int colorId = 0;
         public ProductMaterialCardForm()
         {
             InitializeComponent();
             FillProductComboBox();
             FillMaterialComboBox();
             FillElementComboBox();
+        }
+        public ProductMaterialCardForm(int id)
+        {
+            this.ID = id;
+            string product = "";
+            string material = "";
+            string element = "";
+            string color = "";
+            InitializeComponent();
+            FillProductComboBox();
+            FillMaterialComboBox();
+            FillElementComboBox();
+            DataTable table = LoadTestForm(id, TableName);
+            foreach (DataRow row in table.Rows)
+            {
+                productId = (int)row["product_id"];
+                materialId = (int)row["material_id"];
+                elementId = (int)row["element_id"];
+            }
+            //Находим товар
+            DataTable table3 = DBQueries.LoadParentCard(productId, "product");
+            foreach (DataRow row in table3.Rows)
+            {
+                colorId = (int)row["color_id"];
+            }
+            DataTable table4 = DBQueries.LoadParentCard(colorId, "color");
+            foreach (DataRow row1 in table4.Rows)
+            {
+                string idp = row1["color_id"].ToString();
+                string name = row1["color"].ToString();
+                color = $"{name}";
+            }
+
+            foreach (DataRow row in table3.Rows)
+            {
+                string idp = row["product_id"].ToString();
+                string name = row["product"].ToString();
+                string length = row["length"].ToString();
+                string width = row["width"].ToString();
+                string height = row["height"].ToString();
+                product = $"{name} {color} {length} {width} {height}";
+            }
+            productComboBox.Text = product;
+            //Находим материал
+            DataTable table1 = DBQueries.LoadParentCard(materialId, "material");
+            foreach (DataRow row in table1.Rows)
+            {
+                string idp = row["material_id"].ToString();
+                string name = row["material"].ToString();
+                material = $"{name}";
+            }
+            materialComboBox.Text = material;
+            //Находим элемент
+            DataTable table2 = DBQueries.LoadParentCard(elementId, "element");
+            foreach (DataRow row in table2.Rows)
+            {
+                string idp = row["element_id"].ToString();
+                string name = row["element"].ToString();
+                element = $"{name}";
+            }
+            elementComboBox.Text = element;
         }
         //Заполнение данными materialComboBox
         private void FillMaterialComboBox()
@@ -135,21 +200,43 @@ namespace Store
             }
             int element_id = int.Parse(selectedElementId);
 
-            CardData.Add(("product_id", product_id));
-            CardData.Add(("material_id", material_id));
-            CardData.Add(("element_id", element_id));
-
-
-            if (product_id < 1 || material_id < 1 || element_id < 1)
+            if (ID == 0)
             {
-                MessageBox.Show("Заполните все поля!");
+                CardData.Add(("product_id", product_id));
+                CardData.Add(("material_id", material_id));
+                CardData.Add(("element_id", element_id));
+
+
+                if (product_id < 1 || material_id < 1 || element_id < 1)
+                {
+                    MessageBox.Show("Заполните все поля!");
+                }
+                else
+                {
+                    string res = DBQueries.SaveCard(TableName, CardData.ToArray());
+                    MessageBox.Show(res);
+                    this.Close();
+                }
             }
             else
             {
-                string res = DBQueries.SaveCard(TableName, CardData.ToArray());
-                MessageBox.Show(res);
-                this.Close();
+                CardData.Add(("product_id", product_id));
+                CardData.Add(("material_id", material_id));
+                CardData.Add(("element_id", element_id));
+
+
+                if (product_id < 1 || material_id < 1 || element_id < 1)
+                {
+                    MessageBox.Show("Заполните все поля!");
+                }
+                else
+                {
+                    string res = DBQueries.UpdateCard(TableName, ID, CardData.ToArray());
+                    MessageBox.Show(res);
+                    this.Close();
+                }
             }
-        }
+
+        }   
     }
 }

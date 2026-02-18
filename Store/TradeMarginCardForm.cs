@@ -15,21 +15,34 @@ namespace Store
     {
         private TradeMarginCardForm tradeMarginCardForm;
         public override string TableName { get; set; } = "trademargintable";
+        int ID = 0;
         public TradeMarginCardForm()
         {
             InitializeComponent();
             FillProductComboBox();
         }
         public TradeMarginCardForm(int id)
-        {            
+        {
+            this.ID = id;
             InitializeComponent();
             DataTable table = LoadTestForm(id, TableName);
             string value = table.Rows[0]["percent"].ToString();
             tradeMarginTextBox.Text = value;
-            bool value1 = (bool)table.Rows[0]["status"];
-            statusCheckBox.Checked = value1;
+            //bool value;
+            var x = table.Rows[0]["status"];
+            if (x == null)
+            {
+                bool value1 = false;
+                statusCheckBox.Checked = value1;
+            }
+            else
+            {
+                bool value1 = (bool)table.Rows[0]["status"];
+                statusCheckBox.Checked = value1;
+            }
+            int idProd = (int)table.Rows[0]["product_id"];
             string productCB = "";
-            DataTable table1 = DBQueries.LoadProduct(id, "trademargintable");
+            DataTable table1 = DBQueries.LoadProduct(idProd, "trademargintable");
             foreach (DataRow row in table1.Rows)
             {
                 string product = row["product"].ToString();
@@ -87,6 +100,7 @@ namespace Store
         {
             string product = productComboBox.Text;
             string tradeMargim = tradeMarginTextBox.Text;
+            bool status = statusCheckBox.Checked;
 
             string selectedProductId = "0";
             if (productComboBox.SelectedItem != null && productComboBox.SelectedIndex > 0)
@@ -108,15 +122,17 @@ namespace Store
             {
                 MessageBox.Show("Укажите только цифры!"); return;
             }
-
+            DBQueries.UpdateStatusTradeVargin(product_id);
             CardData.Add(("product_id", product_id));
             CardData.Add(("percent", persent));
-            if (product_id < 1 || persent < 0)
+            CardData.Add(("status", status));
+            if (product_id < 1 || persent < 0 || status == false)
             {
                 MessageBox.Show("Заполните все поля!");
             }
             else
             {
+                
                 string res = DBQueries.SaveCard(TableName, CardData.ToArray());
                 MessageBox.Show(res);
                 this.Close();
