@@ -54,7 +54,9 @@
     <Reference Include="MySql.Data, Version=9.5.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.9.5.0\lib\net462\MySql.Data.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
+    <Reference Include="System">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.dll</HintPath>
+    </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
     </Reference>
@@ -107,11 +109,11 @@
     <Compile Include="ColorForm.Designer.cs">
       <DependentUpon>ColorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="CounteragentCardForm.cs">
+    <Compile Include="CounteragentForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="CounteragentCardForm.Designer.cs">
-      <DependentUpon>CounteragentCardForm.cs</DependentUpon>
+    <Compile Include="CounteragentForm.Designer.cs">
+      <DependentUpon>CounteragentForm.cs</DependentUpon>
     </Compile>
     <Compile Include="DB.cs" />
     <Compile Include="DBQueries.cs" />
@@ -150,6 +152,12 @@
     </Compile>
     <Compile Include="EmployeForm.Designer.cs">
       <DependentUpon>EmployeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form2.Designer.cs">
+      <DependentUpon>Form2.cs</DependentUpon>
     </Compile>
     <Compile Include="MaterialCardForm.cs">
       <SubType>Form</SubType>
@@ -250,6 +258,18 @@
     <Compile Include="ServicesForm.Designer.cs">
       <DependentUpon>ServicesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SupplierProductsCardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SupplierProductsCardForm.Designer.cs">
+      <DependentUpon>SupplierProductsCardForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SupplierProductsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SupplierProductsForm.Designer.cs">
+      <DependentUpon>SupplierProductsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="TradeMarginCardForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -280,6 +300,9 @@
     <EmbeddedResource Include="ColorForm.resx">
       <DependentUpon>ColorForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="CounteragentForm.resx">
+      <DependentUpon>CounteragentForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DeliveryCardForm.resx">
       <DependentUpon>DeliveryCardForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -297,6 +320,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EmployeForm.resx">
       <DependentUpon>EmployeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form2.resx">
+      <DependentUpon>Form2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MaterialCardForm.resx">
       <DependentUpon>MaterialCardForm.cs</DependentUpon>
@@ -354,6 +380,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ServicesForm.resx">
       <DependentUpon>ServicesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SupplierProductsCardForm.resx">
+      <DependentUpon>SupplierProductsCardForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SupplierProductsForm.resx">
+      <DependentUpon>SupplierProductsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TradeMarginCardForm.resx">
       <DependentUpon>TradeMarginCardForm.cs</DependentUpon>

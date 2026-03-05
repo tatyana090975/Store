@@ -16,7 +16,7 @@ namespace Store
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ProductMaterialForm());
+            Application.Run(new SupplierProductsForm());
             //Application.Run(new TradeMarginForm());
         }
     }

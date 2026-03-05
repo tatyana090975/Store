@@ -1,6 +1,6 @@
 ﻿namespace Store
 {
-    partial class CounteragentCardForm
+    partial class CounteragentForm
     {
         /// <summary>
         /// Обязательная переменная конструктора.
@@ -28,7 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.SuspendLayout();
+            // 
+            // CounteragentForm
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.ClientSize = new System.Drawing.Size(1065, 550);
+            this.Location = new System.Drawing.Point(0, 0);
+            this.Name = "CounteragentForm";
+            this.Text = "Справочник контрагентов";
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion

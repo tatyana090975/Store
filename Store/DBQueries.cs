@@ -11,6 +11,33 @@ namespace Store
 {
     internal class DBQueries
     {
+        //Заполнение grid SupplierProductsForm данными из таблиц position и person
+        public static DataTable LoadGridSupplierProductsForm(string TableName)
+        {
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            MySqlCommand command = new MySqlCommand("SELECT\r\ns.supplierProducts_id,\r\ns.date,\r\nc.name,\r\ns.inpNum,\r\ns.inpDate\r\nFROM supplierProducts s\r\nLEFT JOIN\r\ncounteragent c ON s.counteragent_id = c.counteragent_id;", dB.GetConnection());
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
+
+        //Загрузка грида counteragent
+        public static DataTable LoadGridCounteragentForm()
+        {
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            MySqlCommand command = new MySqlCommand("SELECT c.counteragent_id,\r\no.ownership, \r\nc.name, \r\nc.address, \r\nc.phone, \r\nc.itn, \r\nCONCAT(p.surname, ' ', p.name, ' ', p.secondname) AS display_name \r\nFROM person p \r\nINNER JOIN counteragent c ON p.person_id = c.person_id \r\nLEFT JOIN ownership o ON c.ownership_id = o.ownership_id\r\nORDER BY p.surname;", dB.GetConnection());
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
         //Cмена статуса предыдущей записи на false при сохранении новой карточки торговой наценки
         public static void UpdateStatusTradeVargin(int product_id)
         {
@@ -243,7 +270,7 @@ namespace Store
             dB.closeConnection();
             return table;
         }
-
+        //
         public static DataTable LoadProduct(int id, string tabeName)
         {
             string tableName = tabeName;
@@ -324,6 +351,21 @@ namespace Store
                 dB.closeConnection();
             }
         }
-        
+        //Получить id последней записи в таблице supplierproducts
+        public static DataTable GetLastId(string tabeName)
+        {
+            string tableName = tabeName;            
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            string columnName = $"{tableName}_id";
+            MySqlCommand command = new MySqlCommand($"SELECT MAX(`supplierproducts_id`) FROM `supplierproducts`", dB.GetConnection());
+            //command.Parameters.AddWithValue("@id", columnName);
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
     }
 }
