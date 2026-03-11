@@ -11,14 +11,110 @@ namespace Store
 {
     internal class DBQueries
     {
-        //Заполнение grid SupplierProductsForm данными из таблиц position и person
+        //Запрос содержимого грида
+        public static DataTable ReturnGridForm(int id)
+        {
+            int ID = id;
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            //string columnName = $"{tableName}_id";
+            string query = $"SELECT * FROM `supprodtable` WHERE `supplierproducts_id` = @id ORDER BY supprodtable_id";
+            MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
+            command.Parameters.AddWithValue("@id", ID);
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
+        //Обновление DataGridView (табличной части) карточки
+        public static string UpdateGridCard(string tableName, int id, params (string column, object value)[] data)
+        {
+            string errorMessage = string.Empty;
+            DB dB = new DB();
+
+            try
+            {
+                dB.openConnection();
+
+                // Проверяем, есть ли данные для обновления
+                if (data == null || data.Length == 0)
+                {
+                    return "Нет данных для обновления";
+                }
+
+                // Формируем SET часть запроса
+                var setClauses = string.Join(", ",
+                    data.Select((d, i) => $"{d.column} = @p{i}"));
+                string rowId = "supprodtable" + "_" + "id";
+                // SQL запрос с правильным синтаксисом UPDATE
+                string sql = $"UPDATE {tableName} SET {setClauses} WHERE {rowId} = @id";
+
+                using (var command = new MySqlCommand(sql, dB.GetConnection()))
+                {
+                    // Добавляем параметры для SET значений
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        command.Parameters.AddWithValue($"@p{i}", data[i].value ?? DBNull.Value);
+                    }
+
+                    // Добавляем параметр для ID
+                    command.Parameters.AddWithValue("@id", id);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    if (rowsAffected == 0)
+                    {
+                        //return "Запись не найдена или не была изменена";
+                    }
+
+                    return "Успешно обновлено!";
+                }
+            }
+            catch (MySqlException ex) when (ex.Number == 1062) // Код ошибки дублирования
+            {
+                errorMessage = $"Запись уже существует в базе данных.";
+                return errorMessage;
+            }
+            catch (MySqlException ex)
+            {
+                errorMessage = $"Ошибка базы данных ({ex.Number}): {ex.Message}";
+                return errorMessage;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Ошибка: {ex.Message}";
+                return errorMessage;
+            }
+            finally
+            {
+                dB.closeConnection();
+            }
+        }
+        //Заполнение грида карточки SupplierProductsCardForm при открытии
+        public static DataTable LoadGridSupplierProductsCardForm(int id)
+        {
+            int ID = id;
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            MySqlCommand command = new MySqlCommand("SELECT p.product_id, quantity,price, CONCAT(p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) AS product_info, (quantity * price) AS sum FROM supprodtable spt LEFT JOIN product p ON spt.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id WHERE spt.supplierproducts_id = 11 ORDER BY p.product;", dB.GetConnection());
+            command.Parameters.AddWithValue("@id", ID);
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
+        //Заполнение grid SupplierProductsForm данными 
         public static DataTable LoadGridSupplierProductsForm(string TableName)
         {
             DB dB = new DB();
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT\r\ns.supplierProducts_id,\r\ns.date,\r\nc.name,\r\ns.inpNum,\r\ns.inpDate\r\nFROM supplierProducts s\r\nLEFT JOIN\r\ncounteragent c ON s.counteragent_id = c.counteragent_id;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT s.supplierProducts_id, s.date, c.name,\r\ns.inpNum,\r\ns.inpDate\r\nFROM supplierProducts s\r\nLEFT JOIN\r\ncounteragent c ON s.counteragent_id = c.counteragent_id;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -32,7 +128,7 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT c.counteragent_id,\r\no.ownership, \r\nc.name, \r\nc.address, \r\nc.phone, \r\nc.itn, \r\nCONCAT(p.surname, ' ', p.name, ' ', p.secondname) AS display_name \r\nFROM person p \r\nINNER JOIN counteragent c ON p.person_id = c.person_id \r\nLEFT JOIN ownership o ON c.ownership_id = o.ownership_id\r\nORDER BY p.surname;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT c.counteragent_id, o.ownership, c.name, c.address, c.phone, c.itn, CONCAT(p.surname, ' ', p.name, ' ', p.secondname) AS display_name FROM person p INNER JOIN counteragent c ON p.person_id = c.person_id LEFT JOIN ownership o ON c.ownership_id = o.ownership_id ORDER BY p.surname;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();

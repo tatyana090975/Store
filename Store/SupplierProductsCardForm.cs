@@ -32,12 +32,60 @@ namespace Store
 
         public SupplierProductsCardForm(int id)
         {
-            ID = id;
+            ID = id;            
+            string counteragent = "";
             InitializeComponent();
             FillCounteragentComboBox();
             FillProductComboWithIds();
+            Column1.Visible = true;
+            returnButton.Visible = true;
             dataGridView1.CellValidating += dataGridView1_CellValidating;
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
+
+            DataTable table = LoadTestForm(id, TableName);
+            string value = table.Rows[0]["date"].ToString();
+            dateTimePicker1.Text = value;
+            string value1 = table.Rows[0]["inpnum"].ToString();
+            inpNumberTextBox.Text = value1;
+            string value2 = table.Rows[0]["inpdate"].ToString();
+            dateTimePicker2.Text = value2;
+            int idc = (int)table.Rows[0]["counteragent_id"];
+
+            DataTable table1 = DBQueries.LoadParentCard(idc, "counteragent");
+            foreach (DataRow row in table1.Rows)
+            {
+                string id1 = row["counteragent_id"].ToString();
+                string counteragent1 = row["name"].ToString();
+                string itn = row["ITN"].ToString();
+                // Формируем строку для отображения
+                counteragent = $"{counteragent1} {itn}";
+            }
+            counteragentComboBox.Text = counteragent;
+            //Заполнение грида карточки позициями
+            DataTable table2 = DBQueries.LoadGridSupplierProductsCardForm(ID);
+            
+            // Отключаем автоматическое создание столбцов
+            dataGridView1.AutoGenerateColumns = false;
+
+            // Настраиваем привязку существующих столбцов к полям из table2
+            // Делайте это один раз, например, в конструкторе формы или при инициализации
+            dataGridView1.Columns["Column1"].DataPropertyName = "empty_column";
+            dataGridView1.Columns["Column2"].DataPropertyName = "product_id";
+            dataGridView1.Columns["Column3"].DataPropertyName = "quantity"; 
+            dataGridView1.Columns["Column4"].DataPropertyName = "price";
+            dataGridView1.Columns["Column5"].DataPropertyName = "sum";
+
+            // Устанавливаем DataSource
+            dataGridView1.DataSource = table2;
+            
+        }
+
+        protected DataTable LoadTestForm(int a, string tableName)
+        {
+            int cardId = a;
+            string table = TableName;
+            DataTable dataTable = DBQueries.LoadParentCard(cardId, table);
+            return dataTable;
         }
         //Заполнение данными counteragentComboBox
         private void FillCounteragentComboBox()
@@ -280,8 +328,34 @@ namespace Store
                 }
                 else
                 {
+                    //Шапка карточки
                     string res = DBQueries.UpdateCard(TableName, ID, CardData.ToArray());
-                    MessageBox.Show(res);
+                    string res1 = "";
+                    string ids = "";
+                    DataTable tb = DBQueries.GetLastId(TableName);
+                    ids = tb.Rows[0]["MAX(`supplierproducts_id`)"].ToString();
+                    idSup = int.Parse(ids);
+                    //Получить все строки с одинаковым supplierproducts_id
+                    DataTable gridTable = DBQueries.ReturnGridForm(idSup);
+
+                    //Сохранение данных из таблицы построчно
+                    for (int i = 0; i < gridTable.Rows.Count; i++)
+                    {
+                        int idp = 0;
+                        idp = (int)gridTable.Rows[i]["supprodtable_id"];
+                        Tuple<int, int, double> tup = SupProdTable[i];
+                        CardData1.Clear();
+                        //CardData1.Add(("supprodtable_id", idp));
+                        CardData1.Add(("supplierproducts_id", idSup));
+                        CardData1.Add(("product_id", tup.Item1));
+                        CardData1.Add(("quantity", tup.Item2));
+                        CardData1.Add(("price", tup.Item3));
+                        res1 = DBQueries.UpdateGridCard("supprodtable", idp, CardData1.ToArray());
+                        
+                    }
+
+                    
+                    MessageBox.Show(res1);
                     this.Close();
                 }
             }  
