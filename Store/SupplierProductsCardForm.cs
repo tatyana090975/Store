@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Store
 {
@@ -25,9 +26,14 @@ namespace Store
             Column1.Visible = false;
             returnButton.Visible = false;
             FillCounteragentComboBox();
-            FillProductComboWithIds();
-            dataGridView1.CellValidating += dataGridView1_CellValidating;
+            FillProductComboWithIds();            
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
+            // Подписка на событие добавления строк
+            dataGridView1.RowsAdded += DataGridView1_RowsAdded;
+
+            // Также полезно подписаться на изменение значений
+            dataGridView1.CellValidating += dataGridView1_CellValidating;
+            dataGridView1.RowsRemoved += DataGridView1_RowsRemoved;
         }
 
         public SupplierProductsCardForm(int id)
@@ -39,7 +45,7 @@ namespace Store
             FillProductComboWithIds();
             Column1.Visible = true;
             returnButton.Visible = true;
-            dataGridView1.CellValidating += dataGridView1_CellValidating;
+            //dataGridView1.CellValidating += dataGridView1_CellValidating;
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
 
             DataTable table = LoadTestForm(id, TableName);
@@ -223,19 +229,29 @@ namespace Store
 
         private void CalculateSumForRow(int rowIndex)
         {
+            // Проверка индекса строки
+            if (rowIndex < 0 || rowIndex >= dataGridView1.Rows.Count)
+                return;
+
             DataGridViewRow row = dataGridView1.Rows[rowIndex];
 
-            // Получаем значения количества и стоимости
+            // Проверка на новую строку
+            if (row.IsNewRow) return;
+
+            // Проверка существования ячеек
+            if (row.Cells["Column3"] == null || row.Cells["Column4"] == null || row.Cells["Column5"] == null)
+                return;
+
             decimal quantity = 0;
             decimal price = 0;
 
-            // Пробуем получить количество
+            // Безопасное получение значения количества
             if (row.Cells["Column3"].Value != null && row.Cells["Column3"].Value != DBNull.Value)
             {
                 decimal.TryParse(row.Cells["Column3"].Value.ToString(), out quantity);
             }
 
-            // Пробуем получить стоимость
+            // Безопасное получение значения цены
             if (row.Cells["Column4"].Value != null && row.Cells["Column4"].Value != DBNull.Value)
             {
                 decimal.TryParse(row.Cells["Column4"].Value.ToString(), out price);
@@ -247,7 +263,7 @@ namespace Store
             // Устанавливаем значение в Column5
             row.Cells["Column5"].Value = sum;
 
-            // Форматируем отображение (если нужно)
+            // Форматируем отображение
             row.Cells["Column5"].Style.Format = "F2";
             row.Cells["Column5"].Style.Alignment = DataGridViewContentAlignment.MiddleRight;
         }
@@ -393,8 +409,78 @@ namespace Store
             }
 
             // Результат
-            MessageBox.Show($"Сохранено {SupProdTable.Count} записей");
+            //MessageBox.Show($"Сохранено {SupProdTable.Count} записей");
+        }
+        private void CalculateSum()
+        {
+            decimal sum = 0;
+
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                // Пропускаем пустые строки и новую строку для ввода
+                if (!row.IsNewRow && row.Cells["Column5"].Value != null)
+                {
+                    sum += Convert.ToDecimal(row.Cells["Column5"].Value);
+                }
+            }
+
+            sumTextBox.Text = sum.ToString("N2"); // Формат с 2 знаками после запятой
+        }
+        // Событие при добавлении строк
+        private void DataGridView1_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
+            // Небольшая задержка, чтобы строка успела инициализироваться
+            CalculateSum();
+            
+        }
+
+        // Событие при удалении строк
+        private void DataGridView1_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
+        {
+            CalculateSum();
+        }
+
+        // Событие при изменении значений в ячейках
+        private void DataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                // Базовые проверки индексов
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+
+                if (e.RowIndex >= dataGridView1.Rows.Count ||
+                    e.ColumnIndex >= dataGridView1.Columns.Count)
+                    return;
+
+                // ПОЛУЧАЕМ колонки с проверкой на null
+                DataGridViewColumn column3 = dataGridView1.Columns["Column3"];
+                DataGridViewColumn column4 = dataGridView1.Columns["Column4"];
+
+                // Если колонки еще не созданы - выходим
+                if (column3 == null || column4 == null)
+                    return;
+
+                // Проверяем, что это нужные колонки
+                if (e.ColumnIndex == column4.Index || e.ColumnIndex == column3.Index)
+                {
+                    // Дополнительная проверка: существует ли строка
+                    if (e.RowIndex < dataGridView1.Rows.Count)
+                    {
+                        // Вызываем метод расчета для конкретной строки
+                        CalculateSumForRow(e.RowIndex);
+                        // Пересчитываем общую сумму
+                        CalculateSum();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Логируем ошибку, но не показываем пользователю
+                System.Diagnostics.Debug.WriteLine($"Ошибка в CellValueChanged: {ex.Message}");
+            }
         }
     }
+    
 }
 

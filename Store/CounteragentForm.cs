@@ -24,14 +24,14 @@ namespace Store
         //кнопка "Создать запись"
         public override void createRecordButton_Click(object sender, EventArgs e)
         {
-            Form2 counteragentCardForm = new Form2();
+            CounteragentCardForm counteragentCardForm = new CounteragentCardForm();
             counteragentCardForm.Show();
         }
         //
         public override void openButton_Click(object sender, EventArgs e)
         {
             int currenRow = (int)dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
-            Form2 counteragentCardForm = new Form2(currenRow);
+            CounteragentCardForm counteragentCardForm = new CounteragentCardForm(currenRow);
             counteragentCardForm.Show();
         }
     }

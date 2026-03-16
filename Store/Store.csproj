@@ -153,11 +153,11 @@
     <Compile Include="EmployeForm.Designer.cs">
       <DependentUpon>EmployeForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form2.cs">
+    <Compile Include="CounteragentCardForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form2.Designer.cs">
-      <DependentUpon>Form2.cs</DependentUpon>
+    <Compile Include="CounteragentCardForm.Designer.cs">
+      <DependentUpon>CounteragentCardForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MaterialCardForm.cs">
       <SubType>Form</SubType>
@@ -246,6 +246,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaleProductsCardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SaleProductsCardForm.Designer.cs">
+      <DependentUpon>SaleProductsCardForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ServicesCardForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -321,8 +327,8 @@
     <EmbeddedResource Include="EmployeForm.resx">
       <DependentUpon>EmployeForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form2.resx">
-      <DependentUpon>Form2.cs</DependentUpon>
+    <EmbeddedResource Include="CounteragentCardForm.resx">
+      <DependentUpon>CounteragentCardForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MaterialCardForm.resx">
       <DependentUpon>MaterialCardForm.cs</DependentUpon>
@@ -375,6 +381,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="SaleProductsCardForm.resx">
+      <DependentUpon>SaleProductsCardForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ServicesCardForm.resx">
       <DependentUpon>ServicesCardForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -1,6 +1,6 @@
 ﻿namespace Store
 {
-    partial class Form2
+    partial class CounteragentCardForm
     {
         /// <summary>
         /// Required designer variable.

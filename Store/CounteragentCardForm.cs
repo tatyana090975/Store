@@ -11,18 +11,18 @@ using System.Windows.Forms;
 
 namespace Store
 {    
-    public partial class Form2 : Form
+    public partial class CounteragentCardForm : Form
     {
         public string TableName { get; set; } = "counteragent";
         public int ID = 0;
         protected List<(string column, object value)> CardData { get; set; } = new List<(string column, object value)>();
-        public Form2()
+        public CounteragentCardForm()
         {
             InitializeComponent();
             FillOwnershipComboBox();
             FillContactComboBox();
         }
-        public Form2(int id)
+        public CounteragentCardForm(int id)
         {
             ID = id;
             string ownership = "";
