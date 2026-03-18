@@ -25,13 +25,30 @@ namespace Store
             InitializeComponent(); 
             FillCounteragentComboBox();
             FillProductComboWithIds();
+            FillServicesComboWithIds();
+            /*
+            // Подписка на событие редактирования
+            dataGridView1.EditingControlShowing += dataGridView1_EditingControlShowing;
+            //
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
             // Подписка на событие добавления строк
             dataGridView1.RowsAdded += DataGridView1_RowsAdded;
 
             // Также полезно подписаться на изменение значений
             dataGridView1.CellValidating += dataGridView1_CellValidating;
+            dataGridView1.RowsRemoved += DataGridView1_RowsRemoved;*/
+
+            // Подписка на события для первого DataGridView
+            dataGridView1.EditingControlShowing += dataGridView1_EditingControlShowing;
+            dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
+            dataGridView1.RowsAdded += DataGridView1_RowsAdded;
+            dataGridView1.CellValidating += dataGridView1_CellValidating;
             dataGridView1.RowsRemoved += DataGridView1_RowsRemoved;
+
+            // Подписка на события для второго DataGridView
+            dataGridView2.CellValueChanged += DataGridView2_CellValueChanged;
+            dataGridView2.RowsAdded += DataGridView2_RowsAdded;
+            dataGridView2.RowsRemoved += DataGridView2_RowsRemoved;
         }
 
         protected DataTable LoadTestForm(int a, string tableName)
@@ -69,6 +86,7 @@ namespace Store
                 counteragentComboBox.SelectedIndex = 0;
             }
         }
+        //Заполнение ComboBox товары
         private void FillProductComboWithIds()
         {
             DataGridViewComboBoxColumn Column2 = dataGridView1.Columns["Column2"] as DataGridViewComboBoxColumn;
@@ -173,7 +191,7 @@ namespace Store
                 CalculateSumForRow(e.RowIndex);
             }
         }
-
+        //Подсчет суммы в строке price * quantity
         private void CalculateSumForRow(int rowIndex)
         {
             // Проверка индекса строки
@@ -353,16 +371,34 @@ namespace Store
             // Результат
             //MessageBox.Show($"Сохранено {SupProdTable.Count} записей");
         }
+        //Итого по карточке в sumTextBox
         private void CalculateSum()
         {
             decimal sum = 0;
 
+            // Суммируем строки из первого DataGridView (товары)
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
                 // Пропускаем пустые строки и новую строку для ввода
                 if (!row.IsNewRow && row.Cells["Column5"].Value != null)
                 {
-                    sum += Convert.ToDecimal(row.Cells["Column5"].Value);
+                    if (decimal.TryParse(row.Cells["Column5"].Value.ToString(), out decimal rowSum))
+                    {
+                        sum += rowSum;
+                    }
+                }
+            }
+
+            // Суммируем строки из второго DataGridView (услуги)
+            foreach (DataGridViewRow row in dataGridView2.Rows)
+            {
+                // Пропускаем пустые строки и новую строку для ввода
+                if (!row.IsNewRow && row.Cells["ColumnPrice"].Value != null)
+                {
+                    if (decimal.TryParse(row.Cells["ColumnPrice"].Value.ToString(), out decimal rowPrice))
+                    {
+                        sum += rowPrice;
+                    }
                 }
             }
 
@@ -388,7 +424,112 @@ namespace Store
             form.ShowDialog();
             FillCounteragentComboBox();
         }
+        // Обработчик события изменения выбранного значения в комбобоксе Column2
+        private void dataGridView1_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
+        {
+            // Проверяем, что редактируется колонка Column2
+            if (dataGridView1.CurrentCell.ColumnIndex == dataGridView1.Columns["Column2"].Index)
+            {
+                // Получаем ComboBox, который используется для редактирования
+                ComboBox comboBox = e.Control as ComboBox;
+                if (comboBox != null)
+                {
+                    // Удаляем предыдущий обработчик, чтобы не было дублирования
+                    comboBox.SelectedIndexChanged -= ComboBox_SelectedIndexChanged;
+            
+                    // Добавляем новый обработчик
+                    comboBox.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
+                }
+            }
+        }
 
+        private void ComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboBox comboBox = sender as ComboBox;
+    
+            // Проверяем, что выбрано значение (не пустой элемент)
+            if (comboBox.SelectedIndex > 0)
+            {
+                // Получаем выбранный элемент
+                var selectedItem = comboBox.SelectedItem;
         
+                // Извлекаем ID товара из выбранного элемента
+                int productId = 0;
+        
+                // В зависимости от того, как хранятся данные в комбобоксе
+                if (selectedItem is DataRowView rowView)
+                {
+                    // Если используется DataBinding
+                    productId = Convert.ToInt32(rowView["Id"]);
+                }
+                else if (selectedItem.GetType().GetProperty("Id") != null)
+                {
+                    // Если используется анонимный тип
+                    dynamic dynamicItem = selectedItem;
+                    productId = Convert.ToInt32(dynamicItem.Id);
+                }
+        
+                if (productId > 0)
+                {
+                    // Получаем текущую строку
+                    int rowIndex = dataGridView1.CurrentCell.RowIndex;
+            
+                    // Загружаем цену товара из базы данных
+                    decimal price = DBQueries.GetProductPrice(productId);
+            
+                    // Устанавливаем цену в Column4
+                    dataGridView1.Rows[rowIndex].Cells["Column4"].Value = price;
+                }
+            }
+        }
+        //заполнение Combobox услуги
+        private void FillServicesComboWithIds()
+        {
+            DataGridViewComboBoxColumn Column2 = dataGridView2.Columns["ColumnServices"] as DataGridViewComboBoxColumn;
+
+            if (Column2 == null) return;
+
+            // Создаем DataTable для хранения ID и текста
+            DataTable source = new DataTable();
+            source.Columns.Add("Id", typeof(int));
+            source.Columns.Add("DisplayText", typeof(string));
+
+            // Добавляем пустой элемент
+            source.Rows.Add(0, "--Выберите услугу--");
+
+            // Загружаем товары
+            DataTable services = DBQueries.LoadGridServicesComboBox();
+            foreach (DataRow row in services.Rows)
+            {
+                source.Rows.Add(
+                    Convert.ToInt32(row["services_id"]),
+                    $"{row["services"]}"
+                );
+            }
+
+            // Привязываем данные к колонке
+            Column2.DataSource = source;
+            Column2.DisplayMember = "DisplayText";
+            Column2.ValueMember = "Id";
+        }
+        // Обработчики для второго DataGridView
+        private void DataGridView2_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex == dataGridView2.Columns["ColumnPrice"].Index)
+            {
+                CalculateSum();
+            }
+        }
+
+        private void DataGridView2_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
+            CalculateSum();
+        }
+
+        private void DataGridView2_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
+        {
+            CalculateSum();
+        }
+
     }
 }

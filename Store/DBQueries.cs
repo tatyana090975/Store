@@ -6,11 +6,63 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Store
 {
     internal class DBQueries
     {
+        //Заполнение ComboBox услуги
+        public static DataTable LoadGridServicesComboBox()
+        {
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            MySqlCommand command = new MySqlCommand("SELECT services_id, services  FROM services;", dB.GetConnection());
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
+        // Метод для получения цены товара из базы данных
+        public static decimal GetProductPrice(int productId)
+        {
+            decimal price = 0;
+
+            try
+            {
+                // Создаем подключение к БД
+                DB dB = new DB();
+                dB.openConnection();
+
+                // SQL запрос для получения цены товара               
+                
+                string query = "SELECT(SELECT price FROM supprodtable WHERE supprodtable_id = (SELECT MIN(supprodtable_id) FROM product_balance WHERE product_id = @productId AND current_balance > 0)) *(SELECT percent FROM trademargintable WHERE status = 1 AND product_id = @productId) / 100 + (SELECT price FROM supprodtable WHERE supprodtable_id = (SELECT MIN(supprodtable_id) FROM product_balance WHERE product_id = @productId AND current_balance > 0)) AS total_revenue;";
+
+
+                using (MySqlCommand command = new MySqlCommand(query, dB.GetConnection()))
+                {
+                    command.Parameters.AddWithValue("@productId", productId);
+
+                    object result = command.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        price = Convert.ToDecimal(result);
+                    }
+                }
+
+                dB.closeConnection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при получении цены товара: {ex.Message}");
+            }
+
+            return price;
+        }
         //Запрос содержимого грида
         public static DataTable ReturnGridForm(int id)
         {
