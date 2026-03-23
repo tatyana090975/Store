@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,8 +19,10 @@ namespace Store
         protected List<(string column, object value)> CardData { get; set; } = new List<(string column, object value)>();
         protected List<(string column, object value)> CardData1 { get; set; } = new List<(string column, object value)>();
         protected List<(string column, object value)> CardData2 { get; set; } = new List<(string column, object value)>();
+        protected List<(string column, object value)> CardData3 { get; set; } = new List<(string column, object value)>();
 
         private List<Tuple<int, int>> SaleProdTable { get; set; } = new List<Tuple<int, int>>();
+        private List<Tuple<int>> SaleServicesTable { get; set; } = new List<Tuple<int>>();
         int idSup = 0;
         public SaleProductsCardForm()
         {
@@ -26,18 +30,7 @@ namespace Store
             FillCounteragentComboBox();
             FillProductComboWithIds();
             FillServicesComboWithIds();
-            /*
-            // Подписка на событие редактирования
-            dataGridView1.EditingControlShowing += dataGridView1_EditingControlShowing;
-            //
-            dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
-            // Подписка на событие добавления строк
-            dataGridView1.RowsAdded += DataGridView1_RowsAdded;
-
-            // Также полезно подписаться на изменение значений
-            dataGridView1.CellValidating += dataGridView1_CellValidating;
-            dataGridView1.RowsRemoved += DataGridView1_RowsRemoved;*/
-
+            
             // Подписка на события для первого DataGridView
             dataGridView1.EditingControlShowing += dataGridView1_EditingControlShowing;
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
@@ -50,7 +43,81 @@ namespace Store
             dataGridView2.RowsAdded += DataGridView2_RowsAdded;
             dataGridView2.RowsRemoved += DataGridView2_RowsRemoved;
         }
+        public SaleProductsCardForm(int id)
+        {
+            ID = id;
+            string counteragent = "";
+            InitializeComponent();
+            FillCounteragentComboBox();
+            FillProductComboWithIds();
+            FillServicesComboWithIds();
 
+            // Подписка на события для первого DataGridView
+            dataGridView1.EditingControlShowing += dataGridView1_EditingControlShowing;
+            dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
+            dataGridView1.RowsAdded += DataGridView1_RowsAdded;
+            dataGridView1.CellValidating += dataGridView1_CellValidating;
+            dataGridView1.RowsRemoved += DataGridView1_RowsRemoved;
+
+            // Подписка на события для второго DataGridView
+            dataGridView2.CellValueChanged += DataGridView2_CellValueChanged;
+            dataGridView2.RowsAdded += DataGridView2_RowsAdded;
+            dataGridView2.RowsRemoved += DataGridView2_RowsRemoved;
+
+            //Загрузка данных о контрагенте
+            DataTable table = LoadTestForm(id, TableName);//верно
+            string value = table.Rows[0]["date"].ToString();//+
+            dateTimePicker1.Text = value;//+
+            dateTimePicker1.Enabled = false;
+            //поле "контрагент"
+            int idc = (int)table.Rows[0]["counteragent_id"];//+
+
+            DataTable table1 = DBQueries.LoadParentCard(idc, "counteragent");//+
+            foreach (DataRow row in table1.Rows)//+
+            {
+                string id1 = row["counteragent_id"].ToString();//+
+                string counteragent1 = row["name"].ToString();//+
+                string itn = row["ITN"].ToString();//+
+                // Формируем строку для отображения
+                counteragent = $"{counteragent1} {itn}";
+            }
+            counteragentComboBox.Text = counteragent;
+            counteragentComboBox.Enabled = false;
+            //загрузка данных о доставке
+            DataTable table3 = DBQueries.GetDelivery(ID);//+
+            string value1 = table3.Rows[0]["address"].ToString();//+
+            addressTextBox.Text = value1;//+
+            addressTextBox.ReadOnly = true;
+            string value2 = table3.Rows[0]["phone"].ToString();//+
+            phoneMaskedTextBox.Text = value2;//+
+            phoneMaskedTextBox.ReadOnly = true;
+            //Заполнение грида товаров карточки позициями
+            DataTable table2 = DBQueries.LoadGridSaleProductsCardForm(ID);
+
+            // Отключаем автоматическое создание столбцов
+            dataGridView1.AutoGenerateColumns = false;
+            // Настраиваем привязку столбцов (делаем один раз)
+            dataGridView1.Columns["Column2"].DataPropertyName = "product_id";
+            dataGridView1.Columns["Column3"].DataPropertyName = "quantity";
+            dataGridView1.Columns["Column4"].DataPropertyName = "price";
+            dataGridView1.Columns["Column5"].DataPropertyName = "sum";
+            // Устанавливаем DataSource
+            dataGridView1.DataSource = table2;
+            dataGridView1.ReadOnly = true;
+            //Заполнение грида услуг карточки позициями
+            DataTable table4 = DBQueries.LoadGridSaleServicesCardForm(ID);
+
+            // Отключаем автоматическое создание столбцов
+            dataGridView2.AutoGenerateColumns = false;
+            // Настраиваем привязку столбцов (делаем один раз)
+            dataGridView2.Columns["ColumnServices"].DataPropertyName = "services_id";
+            dataGridView2.Columns["ColumnPrice"].DataPropertyName = "price";
+            
+            // Устанавливаем DataSource
+            dataGridView2.DataSource = table4;
+            dataGridView2.ReadOnly = true;
+            sumTextBox.ReadOnly = true;
+        }
         protected DataTable LoadTestForm(int a, string tableName)
         {
             int cardId = a;
@@ -246,6 +313,9 @@ namespace Store
             string address = addressTextBox.Text;
             string phone = phoneMaskedTextBox.Text;
 
+            //Очистка маски телефона от лишних символов
+            phone = Regex.Replace(phone, @"[^\d]", "");
+
             string selectedCounteragentId = "0";
             if (counteragentComboBox.SelectedItem != null && counteragentComboBox.SelectedIndex > 0)
             {
@@ -256,11 +326,11 @@ namespace Store
 
             if (ID == 0)
             {
-                CardData.Add(("counteragent_id", counteragentId));                
+                CardData.Add(("counteragent_id", counteragentId));
                 CardData.Add(("date", currentDate));
-                CardData2.Add(("addess", address));
-                CardData2.Add(("phone",  phone));
+
                 SaveDataGridViewToList();
+                SaveDataGridViewToListServices();
 
                 if (counteragentId < 1)
                 {
@@ -269,75 +339,91 @@ namespace Store
                 else
                 {
                     string res = DBQueries.SaveCard(TableName, CardData.ToArray());
-                    
-                    string res1 = "";
-                    string ids = "";
-                    DataTable tb = DBQueries.GetLastId(TableName);
-                    ids = tb.Rows[0]["MAX(`saleproducts_id`)"].ToString();
-                    idSup = int.Parse(ids);
-                    CardData2.Add(("delivery_id", idSup));
-                    string res2 = DBQueries.SaveCard("delivery", CardData2.ToArray());
-                    //Сохранение данных из таблицы построчно
-                    foreach (Tuple<int, int> tup in SaleProdTable)
+                    if (res == "Успешно сохранено!")
                     {
-                        CardData1.Clear();
-                        CardData1.Add(("saleproducts_id", ids));
-                        CardData1.Add(("product_id", tup.Item1));
-                        CardData1.Add(("quantity", tup.Item2));                        
-                        res1 = DBQueries.SaveCard("saleprodtable", CardData1.ToArray());
+                        string res1 = "";
+                        string res3 = "";
+                        string ids = "";
+                        DataTable tb = DBQueries.GetLastInsertId(TableName);
+                        ids = tb.Rows[0]["last_id"].ToString();
+                        idSup = int.Parse(ids);
+
+                        CardData2.Add(("saleproducts_id", idSup));
+                        CardData2.Add(("address", address));
+                        CardData2.Add(("phone", phone));
+
+                        string res2 = DBQueries.SaveCard("delivery", CardData2.ToArray());
+                        if (res2 == "Успешно сохранено!")
+                        {
+                            //Сохранение данных из таблицы построчно (товары)
+                            foreach (Tuple<int, int> tup in SaleProdTable)
+                            {
+                                int quantity = tup.Item2;
+                                int prodId = tup.Item1;
+                                int supProdTabl_id = 0;
+                                //нужно написать запрос, который по id товара будет находить во вьюшке sapProdTable_id
+                                //в котором current_balans не равен 0 или меньше или равен количеству
+                                DataTable table = DBQueries.GetIDSupprodtable(prodId);
+                                if (table.Rows.Count > 0)
+                                {
+                                    for (int i = 0; i < table.Rows.Count; i++)
+                                    {
+                                        int balance = Convert.ToInt32(table.Rows[i]["current_balance"]);
+                                        if (balance >= quantity)
+                                        {
+                                            supProdTabl_id = Convert.ToInt32(table.Rows[i]["supprodtable_id"]);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            int sumQuan = 0;
+                                            for (int j = 0; j < table.Rows.Count; j++)
+                                            {
+                                                sumQuan += Convert.ToInt32(table.Rows[j]["current_balance"]);
+                                            }
+                                            MessageBox.Show($"На складе {sumQuan} единиц товара в {table.Rows.Count} партиях. Внесите списание несколькими строками.");
+                                            return;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Товара нет в наличии.");
+                                }
+
+                                CardData1.Clear();
+                                CardData1.Add(("saleproducts_id", idSup));
+                                CardData1.Add(("supprodtable_id", supProdTabl_id));
+                                CardData1.Add(("quantity", tup.Item2));
+                                res1 = DBQueries.SaveCard("saleprodtable", CardData1.ToArray());
+                            }
+                            if (res1 == "Успешно сохранено!")
+                            {
+                                //Сохранение данных из таблицы построчно (услуги)
+                                foreach (Tuple<int> tup1 in SaleServicesTable)
+                                {
+                                    CardData3.Clear();
+                                    CardData3.Add(("saleproducts_id", ids));
+                                    CardData3.Add(("services_id", tup1.Item1));
+                                    //CardData1.Add(("quantity", tup1.Item2));
+                                    res3 = DBQueries.SaveCard("saleservice", CardData3.ToArray());
+                                }
+                            }
+                            else { MessageBox.Show("Ошибка сохранения в таблицу saleservice"); }
+                        }
+                        else { MessageBox.Show("Ошибка сохранения в таблицу saleprodtable"); }
                     }
-                    MessageBox.Show(res1);
+                    else { MessageBox.Show("Ошибка сохранения в таблицу delivery"); }
+                    MessageBox.Show("Успешно сохранено.");
                     this.Close();
                 }
-
             }
             else
             {
-                CardData.Add(("counteragent_id", counteragentId));
-                CardData.Add(("date", currentDate));
-                CardData2.Add(("addess", address));
-                CardData2.Add(("phone", phone));
-                SaveDataGridViewToList();
-
-                if (counteragentId < 1)
-                {
-                    MessageBox.Show("Заполните все поля!");
-                }
-                else
-                {
-                    //Шапка карточки
-                    string res = DBQueries.UpdateCard(TableName, ID, CardData.ToArray());
-                    string res1 = "";
-                    string ids = "";
-                    DataTable tb = DBQueries.GetLastId(TableName);
-                    ids = tb.Rows[0]["MAX(`saleproducts_id`)"].ToString();
-                    idSup = int.Parse(ids);
-                    CardData2.Add(("delivery_id", idSup));
-                    string res2 = DBQueries.UpdateCard("delivery", ID, CardData2.ToArray());
-                    //Получить все строки с одинаковым supplierproducts_id
-                    DataTable gridTable = DBQueries.ReturnGridForm(idSup);
-
-                    //Сохранение данных из таблицы построчно
-                    for (int i = 0; i < gridTable.Rows.Count; i++)
-                    {
-                        int idp = 0;
-                        idp = (int)gridTable.Rows[i]["supprodtable_id"];
-                        Tuple<int, int> tup = SaleProdTable[i];
-                        CardData1.Clear();
-                        //CardData1.Add(("supprodtable_id", idp));
-                        CardData1.Add(("saleproducts_id", idSup));
-                        CardData1.Add(("product_id", tup.Item1));
-                        CardData1.Add(("quantity", tup.Item2));
-                        
-                        res1 = DBQueries.UpdateGridCard("supprodtable", idp, CardData1.ToArray());
-                    }
-
-
-                    MessageBox.Show(res1);
-                    this.Close();
-                }
+                this.Close();                
             }
         }
+        //Сохранение данных из грида1 в список SupProdTable
         private void SaveDataGridViewToList()
         {
             // Очищаем список перед заполнением
@@ -364,6 +450,38 @@ namespace Store
                     catch (FormatException ex)
                     {
                         MessageBox.Show($"Ошибка преобразования в строке {row.Index + 1}: {ex.Message}");
+                    }
+                }
+            }
+
+            // Результат
+            //MessageBox.Show($"Сохранено {SupProdTable.Count} записей");
+        }
+        //Сохранение данных из грида2 в список SaleServicesTable
+        private void SaveDataGridViewToListServices()
+        {
+            // Очищаем список перед заполнением
+            //SupProdTable.Clear();
+
+            // Проходим по всем строкам DataGridView
+            foreach (DataGridViewRow row1 in dataGridView2.Rows)
+            {
+                // Пропускаем новую пустую строку
+                if (row1.IsNewRow) continue;
+
+                // Проверяем, что все ячейки не пустые
+                if (row1.Cells["ColumnServices"].Value != null)
+                {
+                    try
+                    {
+                        int value1 = Convert.ToInt32(row1.Cells["ColumnServices"].Value);
+                        
+                        // Добавляем кортеж в список
+                        SaleServicesTable.Add(new Tuple<int>(value1));
+                    }
+                    catch (FormatException ex)
+                    {
+                        MessageBox.Show($"Ошибка преобразования в строке {row1.Index + 1}: {ex.Message}");
                     }
                 }
             }
@@ -442,7 +560,7 @@ namespace Store
                 }
             }
         }
-
+        //
         private void ComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox comboBox = sender as ComboBox;
@@ -493,9 +611,11 @@ namespace Store
             DataTable source = new DataTable();
             source.Columns.Add("Id", typeof(int));
             source.Columns.Add("DisplayText", typeof(string));
+            // Добавляем колонку для цены (можно скрыть)
+            source.Columns.Add("Price", typeof(decimal));
 
             // Добавляем пустой элемент
-            source.Rows.Add(0, "--Выберите услугу--");
+            source.Rows.Add(0, "--Выберите услугу--", 0);
 
             // Загружаем товары
             DataTable services = DBQueries.LoadGridServicesComboBox();
@@ -503,7 +623,8 @@ namespace Store
             {
                 source.Rows.Add(
                     Convert.ToInt32(row["services_id"]),
-                    $"{row["services"]}"
+                    $"{row["services"]}",
+                    Convert.ToDecimal(row["price"]) // предполагаем, что колонка с ценой называется "price"
                 );
             }
 
@@ -511,6 +632,34 @@ namespace Store
             Column2.DataSource = source;
             Column2.DisplayMember = "DisplayText";
             Column2.ValueMember = "Id";
+
+            // Добавляем обработчик события для автоматического заполнения цены
+            dataGridView2.CellValueChanged += (sender, e) =>
+            {
+                // Проверяем, что это нужная колонка и ячейка не пустая
+                if (e.ColumnIndex == Column2.Index && e.RowIndex >= 0)
+                {
+                    var comboBoxCell = dataGridView2.Rows[e.RowIndex].Cells[e.ColumnIndex] as DataGridViewComboBoxCell;
+                    if (comboBoxCell != null && comboBoxCell.Value != null)
+                    {
+                        // Получаем выбранный ID
+                        int selectedId = Convert.ToInt32(comboBoxCell.Value);
+
+                        // Ищем цену в source по ID
+                        DataRow[] foundRows = source.Select($"Id = {selectedId}");
+                        if (foundRows.Length > 0)
+                        {
+                            decimal price = Convert.ToDecimal(foundRows[0]["Price"]);
+
+                            // Устанавливаем цену в колонку "Цена" (предполагаем, что она существует)
+                            if (dataGridView2.Columns.Contains("ColumnPrice"))
+                            {
+                                dataGridView2.Rows[e.RowIndex].Cells["ColumnPrice"].Value = price;
+                            }
+                        }
+                    }
+                }
+            };        
         }
         // Обработчики для второго DataGridView
         private void DataGridView2_CellValueChanged(object sender, DataGridViewCellEventArgs e)
@@ -531,5 +680,6 @@ namespace Store
             CalculateSum();
         }
 
+       
     }
 }

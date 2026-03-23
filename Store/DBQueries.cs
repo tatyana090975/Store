@@ -13,6 +13,73 @@ namespace Store
 {
     internal class DBQueries
     {
+        
+        //заполнение грида услуг при открытии карточки
+        public static DataTable LoadGridSaleServicesCardForm(int id)
+        {
+            int ID = id;
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            string query = "SELECT \r\nss.services_id,\r\ns.services,\r\ns.price\r\nFROM saleservice ss\r\nLEFT JOIN  services s ON ss.services_id = s.services_id\r\nWHERE ss.saleProducts_id = @id\r\nORDER BY s.services;";
+            MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
+            command.Parameters.AddWithValue("@id", ID);
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
+
+        //Заполнение грида карточки SaleProductsCardForm при открытии
+        public static DataTable LoadGridSaleProductsCardForm(int id)
+        {
+            int ID = id;
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            string query = "SELECT \r\n    p.product_id,   \r\n    spt.quantity,\r\n    \r\n    (\r\n        (SELECT price FROM supprodtable WHERE supprodtable_id = \r\n            (SELECT MIN(supprodtable_id) FROM product_balance \r\n             WHERE product_id = p.product_id AND current_balance > 0)\r\n        ) *\r\n        (SELECT percent FROM trademargintable \r\n         WHERE status = 1 AND product_id = p.product_id) / 100\r\n        +\r\n        (SELECT price FROM supprodtable WHERE supprodtable_id = \r\n            (SELECT MIN(supprodtable_id) FROM product_balance \r\n             WHERE product_id = p.product_id AND current_balance > 0)\r\n        )\r\n    ) AS price,\r\n    \r\n    spt.quantity * (\r\n        (SELECT price FROM supprodtable WHERE supprodtable_id = \r\n            (SELECT MIN(supprodtable_id) FROM product_balance \r\n             WHERE product_id = p.product_id AND current_balance > 0)\r\n        ) *\r\n        (SELECT percent FROM trademargintable \r\n         WHERE status = 1 AND product_id = p.product_id) / 100\r\n        +\r\n        (SELECT price FROM supprodtable WHERE supprodtable_id = \r\n            (SELECT MIN(supprodtable_id) FROM product_balance \r\n             WHERE product_id = p.product_id AND current_balance > 0)\r\n        )\r\n    ) AS sum,\r\n    CONCAT(\r\n        p.product, ' ',\r\n        COALESCE(c.color, ''), ' ',\r\n        p.length, 'x',\r\n        p.width, 'x',\r\n        p.height\r\n    ) AS product_info\r\nFROM saleprodtable spt \r\nLEFT JOIN supprodtable suppt ON spt.supprodtable_id = suppt.supprodtable_id\r\nLEFT JOIN product p ON suppt.product_id = p.product_id \r\nLEFT JOIN color c ON p.color_id = c.color_id \r\nWHERE spt.saleproducts_id = @id\r\nORDER BY p.product;";
+            MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
+            command.Parameters.AddWithValue("@id", ID);
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
+        //вернуть данные о доставке
+        public static DataTable GetDelivery(int id)
+        {
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();            
+            string query = $"SELECT * FROM delivery WHERE saleproducts_id = @saleId";
+            MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
+            command.Parameters.AddWithValue("@saleId", id);
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
+            
+        //Поиск ид поступления по ид товара
+        public static DataTable GetIDSupprodtable(int idProd)
+        {
+            int id = idProd;
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            //string columnName = $"{tableName}_id";
+            string query = $"SELECT supprodtable_id,  current_balance FROM product_balance WHERE product_id = @idProd AND current_balance > 0";
+            MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
+            command.Parameters.AddWithValue("@idProd", id);
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
         //Заполнение ComboBox услуги
         public static DataTable LoadGridServicesComboBox()
         {
@@ -20,7 +87,7 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT services_id, services  FROM services;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT *  FROM services;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -152,7 +219,7 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT p.product_id, quantity,price, CONCAT(p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) AS product_info, (quantity * price) AS sum FROM supprodtable spt LEFT JOIN product p ON spt.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id WHERE spt.supplierproducts_id = 11 ORDER BY p.product;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT p.product_id, quantity,price, CONCAT(p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) AS product_info, (quantity * price) AS sum FROM supprodtable spt LEFT JOIN product p ON spt.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id WHERE spt.supplierproducts_id = @id ORDER BY p.product;", dB.GetConnection());
             command.Parameters.AddWithValue("@id", ID);
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
@@ -514,6 +581,24 @@ namespace Store
             adapter1.Fill(table);
             dB.closeConnection();
             return table;
+        }
+        public static DataTable GetLastInsertId(string tableName)
+        {
+            DB dB = new DB();
+            try
+            {
+                dB.openConnection();
+                // LAST_INSERT_ID() возвращает ID последней вставленной записи для текущего соединения
+                string sql = "SELECT LAST_INSERT_ID() as last_id";
+                MySqlDataAdapter adapter = new MySqlDataAdapter(sql, dB.GetConnection());
+                DataTable table = new DataTable();
+                adapter.Fill(table);
+                return table;
+            }
+            finally
+            {
+                dB.closeConnection();
+            }
         }
     }
 }

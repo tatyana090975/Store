@@ -16,7 +16,7 @@ namespace Store
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new SaleProductsCardForm());            
+            Application.Run(new StartPageForm());            
         }
     }
 }
