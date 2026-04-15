@@ -13,6 +13,24 @@ namespace Store
 {
     internal class DBQueries
     {
+        //Проверка соотвествия логина и пароля
+        public static DataTable CheckUser(string login, string password)
+        {
+            string log = login;
+            string pas = password;
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            string query = "SELECT * FROM users WHERE login = @l AND password = @p";
+            MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
+            command.Parameters.AddWithValue("@l", log);
+            command.Parameters.AddWithValue("@p", pas);
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
         
         //заполнение грида услуг при открытии карточки
         public static DataTable LoadGridSaleServicesCardForm(int id)

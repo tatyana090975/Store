@@ -159,6 +159,12 @@
     <Compile Include="CounteragentCardForm.Designer.cs">
       <DependentUpon>CounteragentCardForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="LoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LoginForm.Designer.cs">
+      <DependentUpon>LoginForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MaterialCardForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -341,6 +347,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CounteragentCardForm.resx">
       <DependentUpon>CounteragentCardForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoginForm.resx">
+      <DependentUpon>LoginForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MaterialCardForm.resx">
       <DependentUpon>MaterialCardForm.cs</DependentUpon>
