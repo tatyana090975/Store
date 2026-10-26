@@ -20,7 +20,7 @@ namespace Store
         //Запролнение grid данными из таблицы 
         public override void ParentDirectoryFormFill()
         {
-            dataGridViewParentDirectory.DataSource = DBQueries.LoadGridInForm(TableName);
+            dataGridViewParentDirectory.DataSource = DBQueries.LoadGridInSaleProducts(TableName);
         }
         //кнопка "Создать запись"
         public override void createRecordButton_Click(object sender, EventArgs e)

@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
-            this.returnButton = new System.Windows.Forms.Button();
             this.newProdButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.inpDateLabel = new System.Windows.Forms.Label();
@@ -59,7 +58,6 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.returnButton);
             this.panel1.Controls.Add(this.newProdButton);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.inpDateLabel);
@@ -74,16 +72,6 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1000, 146);
             this.panel1.TabIndex = 0;
-            // 
-            // returnButton
-            // 
-            this.returnButton.Location = new System.Drawing.Point(577, 98);
-            this.returnButton.Name = "returnButton";
-            this.returnButton.Size = new System.Drawing.Size(169, 30);
-            this.returnButton.TabIndex = 10;
-            this.returnButton.Text = "Выбрать возврат";
-            this.returnButton.UseVisualStyleBackColor = true;
-            this.returnButton.Visible = false;
             // 
             // newProdButton
             // 
@@ -328,7 +316,6 @@
         private System.Windows.Forms.Button OKButton;
         private System.Windows.Forms.Button CloseButton;
         private System.Windows.Forms.Button newProdButton;
-        private System.Windows.Forms.Button returnButton;
         private System.Windows.Forms.DataGridViewCheckBoxColumn Column1;
         private System.Windows.Forms.DataGridViewComboBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;

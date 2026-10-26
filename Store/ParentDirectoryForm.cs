@@ -28,8 +28,8 @@ namespace Store
         //Кнопка "Создать запись"
         public virtual void createRecordButton_Click(object sender, EventArgs e)
         {
-            ParentCardForm parentCardForm = new ParentCardForm();
-            parentCardForm.Show();
+            /*ParentCardForm parentCardForm = new ParentCardForm();
+            parentCardForm.Show();*/
 
         }
         //Кнопка "Обновить"
@@ -63,10 +63,10 @@ namespace Store
         //Кнопка Открыть карточку
         public virtual void openButton_Click(object sender, EventArgs e)
         {
-            var idd = dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
+            /*var idd = dataGridViewParentDirectory.CurrentRow.Cells[0].Value;
             int currenRow = (int)idd;
             ParentCardForm parentCardForm = new ParentCardForm(currenRow);
-            parentCardForm.Show();
+            parentCardForm.Show();*/
         }
         
     }

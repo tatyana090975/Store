@@ -24,7 +24,7 @@ namespace Store
         {
             InitializeComponent();
             Column1.Visible = false;
-            returnButton.Visible = false;
+            //returnButton.Visible = false;
             FillCounteragentComboBox();
             FillProductComboWithIds();            
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
@@ -44,7 +44,7 @@ namespace Store
             FillCounteragentComboBox();
             FillProductComboWithIds();
             Column1.Visible = true;
-            returnButton.Visible = true;
+            //returnButton.Visible = true;
             //dataGridView1.CellValidating += dataGridView1_CellValidating;
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
 

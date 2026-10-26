@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Microsoft.AspNetCore.Identity;
 
 namespace Store
 {
@@ -16,6 +17,7 @@ namespace Store
         private int formId;
         public override string TableName { get; set; } = "users";
         public int ID = 0;
+        private readonly PasswordHasher<object> passwordHasher = new PasswordHasher<object>();
         public UsersCardForm()
         {
             name.Text = "Логин*";
@@ -32,9 +34,8 @@ namespace Store
             InitializeComponent();
             DataTable table = LoadTestForm(id, TableName);
             string value = table.Rows[0]["login"].ToString();
-            nameTextBox.Text = value;
-            string value1 = table.Rows[0]["password"].ToString();
-            passwordTextBox.Text = value1;
+            nameTextBox.Text = value;            
+            passwordTextBox.Text = "";
             DataTable table1 = DBQueries.LoadParentCard(ID, "person");
             foreach (DataRow row in table1.Rows)
             {
@@ -113,17 +114,18 @@ namespace Store
             int users_id = int.Parse(selectedPersonId);
           
             if (ID == 0)
-            {
-                CardData.Add(("users_id", users_id));
-                CardData.Add(("login", login));
-                CardData.Add(("password", password));
-
+            {     
                 if (login == "" || password == "" || users_id < 1)
                 {
                     MessageBox.Show("Заполните все поля!");
                 }
                 else
                 {
+                    string hashPass = passwordHasher.HashPassword(null, password);
+                    CardData.Add(("users_id", users_id));
+                    CardData.Add(("login", login));
+                    CardData.Add(("password", hashPass));
+
                     string res = DBQueries.SaveCard(TableName, CardData.ToArray());
                     MessageBox.Show(res);
                     this.Close();
@@ -131,16 +133,21 @@ namespace Store
             }
             else
             {                
-                CardData.Add(("users_id", ID));
-                CardData.Add(("login", login));
-                CardData.Add(("password", password));
-
-                if (login == "" || password == "" || ID < 1)
+                
+                if (login == "" || ID < 1)
                 {
                     MessageBox.Show("Заполните все поля!");
                 }
                 else
                 {
+                    CardData.Add(("users_id", ID));
+                    CardData.Add(("login", login));
+                    if (!string.IsNullOrWhiteSpace(password))
+                    {
+                        string hashPass = passwordHasher.HashPassword(null, password);
+                        CardData.Add(("password", hashPass));
+                    }                    
+
                     string res = DBQueries.UpdateCard(TableName, ID, CardData.ToArray());
                     MessageBox.Show(res);
                     this.Close();

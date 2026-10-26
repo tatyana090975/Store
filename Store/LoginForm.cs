@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,6 +11,7 @@ namespace Store
 {
     public partial class LoginForm : Store.ParentCardForm
     {
+        private readonly PasswordHasher<object> passwordHasher = new PasswordHasher<object>();
         public LoginForm()
         {
             InitializeComponent();
@@ -24,9 +26,20 @@ namespace Store
             }
             else
             {
-                DataTable res = DBQueries.CheckUser(login, password);
+                DataTable res = DBQueries.CheckUser(login);
 
-                if (res.Rows.Count == 1)
+                if (res.Rows.Count != 1)
+                {
+                    MessageBox.Show("Неверный логин или пароль!");
+                    return;
+                }
+                
+                string currentHash = res.Rows[0]["password"].ToString();
+                
+                var result = passwordHasher.VerifyHashedPassword(null, currentHash, password);
+
+                if (result == PasswordVerificationResult.Success ||
+                    result == PasswordVerificationResult.SuccessRehashNeeded)
                 {
                     StartPageForm startPageForm = new StartPageForm();
                     startPageForm.ShowDialog();
@@ -34,7 +47,7 @@ namespace Store
                 }
                 else
                 {
-                    MessageBox.Show("Неверный логин или пароль!"); 
+                    MessageBox.Show("Неверный логин или пароль!");
                 }
             }            
         }

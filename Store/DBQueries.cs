@@ -14,18 +14,18 @@ namespace Store
     internal class DBQueries
     {
         //Проверка соотвествия логина и пароля
-        public static DataTable CheckUser(string login, string password)
+        public static DataTable CheckUser(string login)
         {
             string log = login;
-            string pas = password;
+            //string pas = password;
             DB dB = new DB();
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            string query = "SELECT * FROM users WHERE login = @l AND password = @p";
+            string query = "SELECT * FROM users WHERE login = @l";
             MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
             command.Parameters.AddWithValue("@l", log);
-            command.Parameters.AddWithValue("@p", pas);
+            //command.Parameters.AddWithValue("@p", pas);
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -40,7 +40,7 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            string query = "SELECT \r\nss.services_id,\r\ns.services,\r\ns.price\r\nFROM saleservice ss\r\nLEFT JOIN  services s ON ss.services_id = s.services_id\r\nWHERE ss.saleProducts_id = @id\r\nORDER BY s.services;";
+            string query = "SELECT ss.services_id, s.services, s.price FROM saleservice ss LEFT JOIN  services s ON ss.services_id = s.services_id WHERE ss.saleProducts_id = @id ORDER BY s.services;";
             MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
             command.Parameters.AddWithValue("@id", ID);
             adapter1.SelectCommand = command;
@@ -57,7 +57,24 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            string query = "SELECT \r\n    p.product_id,   \r\n    spt.quantity,\r\n    \r\n    (\r\n        (SELECT price FROM supprodtable WHERE supprodtable_id = \r\n            (SELECT MIN(supprodtable_id) FROM product_balance \r\n             WHERE product_id = p.product_id AND current_balance > 0)\r\n        ) *\r\n        (SELECT percent FROM trademargintable \r\n         WHERE status = 1 AND product_id = p.product_id) / 100\r\n        +\r\n        (SELECT price FROM supprodtable WHERE supprodtable_id = \r\n            (SELECT MIN(supprodtable_id) FROM product_balance \r\n             WHERE product_id = p.product_id AND current_balance > 0)\r\n        )\r\n    ) AS price,\r\n    \r\n    spt.quantity * (\r\n        (SELECT price FROM supprodtable WHERE supprodtable_id = \r\n            (SELECT MIN(supprodtable_id) FROM product_balance \r\n             WHERE product_id = p.product_id AND current_balance > 0)\r\n        ) *\r\n        (SELECT percent FROM trademargintable \r\n         WHERE status = 1 AND product_id = p.product_id) / 100\r\n        +\r\n        (SELECT price FROM supprodtable WHERE supprodtable_id = \r\n            (SELECT MIN(supprodtable_id) FROM product_balance \r\n             WHERE product_id = p.product_id AND current_balance > 0)\r\n        )\r\n    ) AS sum,\r\n    CONCAT(\r\n        p.product, ' ',\r\n        COALESCE(c.color, ''), ' ',\r\n        p.length, 'x',\r\n        p.width, 'x',\r\n        p.height\r\n    ) AS product_info\r\nFROM saleprodtable spt \r\nLEFT JOIN supprodtable suppt ON spt.supprodtable_id = suppt.supprodtable_id\r\nLEFT JOIN product p ON suppt.product_id = p.product_id \r\nLEFT JOIN color c ON p.color_id = c.color_id \r\nWHERE spt.saleproducts_id = @id\r\nORDER BY p.product;";
+            string query = "SELECT p.product_id, spt.quantity, ((SELECT price FROM supprodtable " +
+                "WHERE supprodtable_id = (SELECT MIN(supprodtable_id) " +
+                "FROM product_balance " +
+                "WHERE product_id = p.product_id AND current_balance > 0)) * " +
+                "(SELECT percent FROM trademargintable WHERE status = 1 AND product_id = p.product_id)" +
+                " / 100 + (SELECT price FROM supprodtable WHERE supprodtable_id = (SELECT MIN(supprodtable_id) " +
+                "FROM product_balance WHERE product_id = p.product_id AND current_balance > 0))) " +
+                "AS price, spt.quantity * ((SELECT price FROM supprodtable WHERE supprodtable_id = " +
+                "(SELECT MIN(supprodtable_id) FROM product_balance WHERE product_id = p.product_id " +
+                "AND current_balance > 0)) * (SELECT percent FROM trademargintable WHERE status = 1 " +
+                "AND product_id = p.product_id) / 100 + (SELECT price FROM supprodtable " +
+                "WHERE supprodtable_id = (SELECT MIN(supprodtable_id) FROM product_balance " +
+                "WHERE product_id = p.product_id AND current_balance > 0))) AS sum, " +
+                "CONCAT(p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) " +
+                "AS product_info FROM saleprodtable spt LEFT JOIN supprodtable suppt " +
+                "ON spt.supprodtable_id = suppt.supprodtable_id LEFT JOIN product p " +
+                "ON suppt.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id " +
+                "WHERE spt.saleproducts_id = @id ORDER BY p.product;";
             MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
             command.Parameters.AddWithValue("@id", ID);
             adapter1.SelectCommand = command;
@@ -90,7 +107,8 @@ namespace Store
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
             //string columnName = $"{tableName}_id";
-            string query = $"SELECT supprodtable_id,  current_balance FROM product_balance WHERE product_id = @idProd AND current_balance > 0";
+            string query = $"SELECT supprodtable_id,  current_balance FROM product_balance " +
+                $"WHERE product_id = @idProd AND current_balance > 0";
             MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
             command.Parameters.AddWithValue("@idProd", id);
             adapter1.SelectCommand = command;
@@ -124,8 +142,13 @@ namespace Store
 
                 // SQL запрос для получения цены товара               
                 
-                string query = "SELECT(SELECT price FROM supprodtable WHERE supprodtable_id = (SELECT MIN(supprodtable_id) FROM product_balance WHERE product_id = @productId AND current_balance > 0)) *(SELECT percent FROM trademargintable WHERE status = 1 AND product_id = @productId) / 100 + (SELECT price FROM supprodtable WHERE supprodtable_id = (SELECT MIN(supprodtable_id) FROM product_balance WHERE product_id = @productId AND current_balance > 0)) AS total_revenue;";
-
+                string query = "SELECT(SELECT price FROM supprodtable " +
+                    "WHERE supprodtable_id = (SELECT MIN(supprodtable_id) " +
+                    "FROM product_balance WHERE product_id = @productId AND current_balance > 0)) *" +
+                    "(SELECT percent FROM trademargintable WHERE status = 1 " +
+                    "AND product_id = @productId) / 100 + (SELECT price FROM supprodtable " +
+                    "WHERE supprodtable_id = (SELECT MIN(supprodtable_id) FROM product_balance " +
+                    "WHERE product_id = @productId AND current_balance > 0)) AS total_revenue;";
 
                 using (MySqlCommand command = new MySqlCommand(query, dB.GetConnection()))
                 {
@@ -157,7 +180,8 @@ namespace Store
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
             //string columnName = $"{tableName}_id";
-            string query = $"SELECT * FROM `supprodtable` WHERE `supplierproducts_id` = @id ORDER BY supprodtable_id";
+            string query = $"SELECT * FROM `supprodtable` WHERE `supplierproducts_id` = @id " +
+                $"ORDER BY supprodtable_id";
             MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
             command.Parameters.AddWithValue("@id", ID);
             adapter1.SelectCommand = command;
@@ -237,7 +261,13 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT p.product_id, quantity,price, CONCAT(p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) AS product_info, (quantity * price) AS sum FROM supprodtable spt LEFT JOIN product p ON spt.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id WHERE spt.supplierproducts_id = @id ORDER BY p.product;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT p.product_id, quantity,price, " +
+                "CONCAT(p.product, ' ', " +
+                "COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) " +
+                "AS product_info, (quantity * price) AS sum " +
+                "FROM supprodtable spt LEFT JOIN product p ON spt.product_id = p.product_id " +
+                "LEFT JOIN color c ON p.color_id = c.color_id " +
+                "WHERE spt.supplierproducts_id = @id ORDER BY p.product;", dB.GetConnection());
             command.Parameters.AddWithValue("@id", ID);
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
@@ -251,7 +281,9 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT s.supplierProducts_id, s.date, c.name,\r\ns.inpNum,\r\ns.inpDate\r\nFROM supplierProducts s\r\nLEFT JOIN\r\ncounteragent c ON s.counteragent_id = c.counteragent_id;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT s.supplierProducts_id, s.date, c.name, " +
+                "s.inpNum, s.inpDate FROM supplierProducts s " +
+                "LEFT JOIN counteragent c ON s.counteragent_id = c.counteragent_id;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -265,7 +297,11 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT c.counteragent_id, o.ownership, c.name, c.address, c.phone, c.itn, CONCAT(p.surname, ' ', p.name, ' ', p.secondname) AS display_name FROM person p INNER JOIN counteragent c ON p.person_id = c.person_id LEFT JOIN ownership o ON c.ownership_id = o.ownership_id ORDER BY p.surname;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT c.counteragent_id, o.ownership, c.name, " +
+                "c.address, c.phone, c.itn, CONCAT(p.surname, ' ', p.name, ' ', p.secondname) " +
+                "AS display_name FROM person p INNER JOIN counteragent c " +
+                "ON p.person_id = c.person_id LEFT JOIN ownership o " +
+                "ON c.ownership_id = o.ownership_id ORDER BY p.surname;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -278,7 +314,8 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("UPDATE trademargintable SET status = FALSE WHERE product_id = @product_id AND status = TRUE;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("UPDATE trademargintable SET " +
+                "status = FALSE WHERE product_id = @product_id AND status = TRUE;", dB.GetConnection());
             command.Parameters.AddWithValue("@product_id", product_id);
             adapter.SelectCommand = command;
             adapter.Fill(table);
@@ -292,7 +329,8 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT users_id, users_login, users_password FROM users", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT users_id, users_login, users_password " +
+                "FROM users", dB.GetConnection());
             adapter.SelectCommand = command;
             adapter.Fill(table);
             dB.closeConnection();
@@ -308,6 +346,25 @@ namespace Store
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
             string columnName = $"{tableName}_id";
             string query = $"SELECT * FROM `{tableName}`";
+            MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
+            adapter1.SelectCommand = command;
+            adapter1.Fill(table);
+            dB.closeConnection();
+            return table;
+        }
+        // заполнение грида справочника "Продажи товара"
+        public static DataTable LoadGridInSaleProducts(string tableName)
+        {
+            DB dB = new DB();
+            dB.openConnection();
+            DataTable table = new DataTable();
+            MySqlDataAdapter adapter1 = new MySqlDataAdapter();
+            //string columnName = $"{tableName}_id";
+            string query = $"SELECT s.saleproducts_id, s.date, " +
+                $"CONCAT(p.surname, ' ', p.name, ' ', COALESCE(p.secondname, '')) " +
+                $"AS display_name FROM saleproducts s INNER JOIN counteragent c " +
+                $"ON s.counteragent_id = c.counteragent_id INNER JOIN person p " +
+                $"ON c.person_id = p.person_id ORDER BY p.surname;";
             MySqlCommand command = new MySqlCommand(query, dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
@@ -415,7 +472,10 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT p.person_id, u.login, u.password, CONCAT(p.surname, ' ', p.name, ' ', p.secondname) AS display_name FROM person p INNER JOIN users u ON p.person_id = u.users_id ORDER BY p.surname;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT p.person_id, u.login, u.password, " +
+                "CONCAT(p.surname, ' ', p.name, ' ', p.secondname) AS display_name " +
+                "FROM person p INNER JOIN users u ON p.person_id = u.users_id " +
+                "ORDER BY p.surname;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -441,7 +501,12 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT e.employe_id AS 'ID', CONCAT(p.surname, ' ', p.name, ' ', COALESCE(p.secondname, '')) AS 'ФИО', pos.position AS 'Должность' FROM employe e INNER JOIN person p ON e.person_id = p.person_id INNER JOIN `position` pos ON e.position_id = pos.position_id ORDER BY p.surname;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT e.employe_id AS 'ID', " +
+                "CONCAT(p.surname, ' ', p.name, ' ', COALESCE(p.secondname, '')) " +
+                "AS 'ФИО', pos.position AS 'Должность' FROM employe e " +
+                "INNER JOIN person p ON e.person_id = p.person_id " +
+                "INNER JOIN `position` pos ON e.position_id = pos.position_id " +
+                "ORDER BY p.surname;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -454,7 +519,9 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT p.product_id, p.product, c.color, p.length, p.width, p.height  FROM product p LEFT JOIN color c ON p.color_id = c.color_id;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT p.product_id, p.product, c.color, " +
+                "p.length, p.width, p.height  FROM product p LEFT JOIN color c " +
+                "ON p.color_id = c.color_id;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -467,7 +534,13 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT pm.product_Material_id, CONCAT (p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) AS product_info,  m.material, e.element FROM product_material pm LEFT JOIN product p ON pm.product_id = p.product_id LEFT JOIN color c ON p.color_id = c.color_id INNER JOIN material m ON pm.material_id = m.material_id INNER JOIN element e ON pm.element_id = e.element_id ORDER BY p.product, m.material, e.element;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT pm.product_Material_id, " +
+                "CONCAT (p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', " +
+                "p.height) AS product_info,  m.material, e.element FROM product_material pm " +
+                "LEFT JOIN product p ON pm.product_id = p.product_id LEFT JOIN color c " +
+                "ON p.color_id = c.color_id INNER JOIN material m " +
+                "ON pm.material_id = m.material_id INNER JOIN element e " +
+                "ON pm.element_id = e.element_id ORDER BY p.product, m.material, e.element;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -480,7 +553,13 @@ namespace Store
             dB.openConnection();
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
-            MySqlCommand command = new MySqlCommand("SELECT t.tradeMarginTable_id, CONCAT(p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, 'x', p.height) AS product_info, t.percent, t.status, t.date    FROM product p  LEFT JOIN color c ON p.color_id = c.color_id LEFT JOIN trademargintable t ON t.product_id = p.product_id LEFT JOIN product_material pm ON pm.product_id = p.product_id ORDER BY p.product;", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand("SELECT t.tradeMarginTable_id, " +
+                "CONCAT(p.product, ' ', COALESCE(c.color, ''), ' ', p.length, 'x', p.width, " +
+                "'x', p.height) AS product_info, t.percent, t.status, t.date    " +
+                "FROM product p  LEFT JOIN color c ON p.color_id = c.color_id " +
+                "LEFT JOIN trademargintable t ON t.product_id = p.product_id " +
+                "LEFT JOIN product_material pm ON pm.product_id = p.product_id " +
+                "ORDER BY p.product;", dB.GetConnection());
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
             dB.closeConnection();
@@ -503,7 +582,8 @@ namespace Store
             dB.closeConnection();
             return table;
         }
-        //
+        //Заполнение поля "Наименование товара" при открытии карточки торговой наценки
+        //(TradeMarginCardForm)
         public static DataTable LoadProduct(int id, string tabeName)
         {
             string tableName = tabeName;
@@ -513,7 +593,9 @@ namespace Store
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
             string columnName = $"{tableName}_id";
-            MySqlCommand command = new MySqlCommand($"SELECT  p.product, c.color,  p.length,  p.width,  p.height FROM product p LEFT JOIN color c ON p.color_id = c.color_id WHERE p.product_id = @id", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand($"SELECT  p.product, c.color,  p.length,  " +
+                $"p.width,  p.height FROM product p LEFT JOIN color c " +
+                $"ON p.color_id = c.color_id WHERE p.product_id = @id", dB.GetConnection());
             command.Parameters.AddWithValue("@id", cardId);
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
@@ -593,7 +675,8 @@ namespace Store
             DataTable table = new DataTable();
             MySqlDataAdapter adapter1 = new MySqlDataAdapter();
             string columnName = $"{tableName}_id";
-            MySqlCommand command = new MySqlCommand($"SELECT MAX(`supplierproducts_id`) FROM `supplierproducts`", dB.GetConnection());
+            MySqlCommand command = new MySqlCommand($"SELECT MAX(`supplierproducts_id`) " +
+                $"FROM `supplierproducts`", dB.GetConnection());
             //command.Parameters.AddWithValue("@id", columnName);
             adapter1.SelectCommand = command;
             adapter1.Fill(table);
